@@ -1,0 +1,18 @@
+function lblMapS = split(lblMap,dF)
+%% some super voxels have multiple peak. 
+    svLst = label2idx(lblMap);
+    [H,W,T] = size(lblMap);
+    dFVec = reshape(dF,[],T);
+    
+    for i = 1:numel(svLst)
+        pix = svLst{i};
+        [ih,iw,it] = ind2sub([H,W,T],pix);
+        ihw = sub2ind([H,W],ih,iw);
+        curve = mean(dFVec(ihw,:));
+    end
+
+
+
+
+
+end
