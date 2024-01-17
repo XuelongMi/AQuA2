@@ -1,9 +1,6 @@
 function flow2(~,evtDat,f)
 %% the function of RunAllSteps
 fh = guidata(f);
-opts = getappdata(f,'opts');
-setappdata(f,'opts',opts);
-
 ui.detect.preProcessRun([],[],f);
 if(~isempty(getappdata(f,'datCorrect1')))
     setappdata(f,'datOrg1',getappdata(f,'datCorrect1'));
@@ -26,13 +23,18 @@ ui.detect.feaRun([],[],f);
 
 % controls
 fh.deOutBack.Visible = 'on';
-fh.deOutRun.String = 'Extract';
-fh.deOutNext.Visible = 'off';
+fh.deOutRun.Text = 'Extract';
+fh.deOutNext.Text = 'CFU detect';
 
-fh.deOutTab.Selection = 6;
-for i=1:6
-    fh.deOutTab.TabEnables{i} = 'on';
+fh.deOutTab.SelectedTab = fh.deOutTab.Children(end);
+opts = getappdata(f,'opts');
+opts.enableTab = numel(fh.deOutTab.Children)+1;
+
+for i = 1:numel(fh.deOutTab.Children)
+    fh.deOutTab.Children(i).ForegroundColor = [0,0,0];
 end
+
+setappdata(f,'opts',opts);
 
 end
 

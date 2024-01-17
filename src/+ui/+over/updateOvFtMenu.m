@@ -38,8 +38,8 @@ ovName = unique(ovName);
 k = strfind(ovName,dSel);
 idx = find(cellfun(@isempty,k)==0,1); %#ok<STRCLFH>
 
-fh.overlayDat.String = ovName;
-fh.overlayDat.Value = idx;
+fh.overlayDat.Items = ovName;
+fh.overlayDat.Value = fh.overlayDat.Items{idx};
 
 ui.over.chgOv([],[],f,1);
 

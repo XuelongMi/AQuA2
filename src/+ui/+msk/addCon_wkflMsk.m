@@ -1,76 +1,61 @@
-function addCon_wkflMsk(f, pWkfl)
+function addCon_wkflMsk(f, pWkflMsk)
 
     % workflow panels ----
-    bWkfl = uix.VBox('Parent', pWkfl, 'Spacing', 5);
-    % pDraw = uix.BoxPanel('Parent', bWkfl, 'Title', 'Manually add/remove regions/landmarks');
-    % pFgBg = uix.BoxPanel('Parent', bWkfl, 'Title', '  Foreground and background');
-    pMsk = uix.BoxPanel('Parent', bWkfl, 'Title', '  Load masks');
-    pSave = uix.BoxPanel('Parent', bWkfl, 'Title', '  Save regions/landmarks');
-    uix.Empty('Parent', bWkfl);
-    bWkfl.Heights = [390, 150, -1];
-    % bWkfl.Heights = [130, 390, 120, -1];
+    bWkfl = uigridlayout(pWkflMsk,'ColumnWidth',{'1x'},'RowHeight',{390,150},'Padding',[0,0,0,0],'RowSpacing',5);
+    pMsk = uipanel(bWkfl);
+    pSave = uipanel( bWkfl);
 
     % load masks ---
-    bLoad = uix.VBox('Parent', pMsk, 'Spacing', 5, 'Padding', 5);
-    gLoad = uix.Grid('Parent', bLoad, 'Spacing', 5, 'Padding', 5);
-    uicontrol(gLoad, 'Style', 'text', 'String', 'Region', 'HorizontalAlignment', 'left');
-    uicontrol(gLoad, 'Style', 'text', 'String', 'Region maker', 'HorizontalAlignment', 'left');
-    uicontrol(gLoad, 'Style', 'text', 'String', 'Landmark', 'HorizontalAlignment', 'left');
-    uicontrol(gLoad, 'String', 'Self_CH1', 'Callback', {@ui.msk.readMsk, f, 'self_CH1', 'region'});
-    uicontrol(gLoad, 'String', 'Self_CH2', 'Callback', {@ui.msk.readMsk, f, 'self_CH2', 'region'});
-    uicontrol(gLoad, 'String', 'Self_CH1', 'Callback', {@ui.msk.readMsk, f, 'self_CH1', 'regionMarker'});
-    uicontrol(gLoad, 'String', 'Self_CH2', 'Callback', {@ui.msk.readMsk, f, 'self_CH2', 'regionMarker'});
-    uicontrol(gLoad, 'String', 'Self_CH1', 'Callback', {@ui.msk.readMsk, f, 'self_CH1', 'landmark'});
-    uicontrol(gLoad, 'String', 'Self_CH2', 'Callback', {@ui.msk.readMsk, f, 'self_CH2', 'landmark'});
-    uicontrol(gLoad, 'String', 'Folder', 'Callback', {@ui.msk.readMsk, f, 'folder', 'region'});
-    uicontrol(gLoad, 'String', 'Folder', 'Callback', {@ui.msk.readMsk, f, 'folder', 'regionMarker'});
-    uicontrol(gLoad, 'String', 'Folder', 'Callback', {@ui.msk.readMsk, f, 'folder', 'landmark'});
-    uicontrol(gLoad, 'String', 'File', 'Callback', {@ui.msk.readMsk, f, 'file', 'region'});
-    uicontrol(gLoad, 'String', 'File', 'Callback', {@ui.msk.readMsk, f, 'file', 'regionMarker'});
-    uicontrol(gLoad, 'String', 'File', 'Callback', {@ui.msk.readMsk, f, 'file', 'landmark'});
-    gLoad.Widths = [-1, 50,50,50,50];
-    gLoad.Heights = [20, 20, 20];
-    % uix.Empty('Parent', bLoad);
+    bLoad = uigridlayout(pMsk,'ColumnWidth',{'1x'},'RowHeight',{100,'1x',20,20,20},'Padding',[0,5,0,0],'RowSpacing',5,'ColumnSpacing',5);
+    gLoad = uigridlayout(bLoad,'ColumnWidth',{'1x',55,55,50,40},'RowHeight',{20,20,20,20},'Padding',[0,0,0,0],'RowSpacing',5,'ColumnSpacing',5);
+    p = uilabel(gLoad,'Text','Load masks','BackgroundColor',[0 0.3 0.6],'FontColor','white');
+    p.Layout.Column = [1,5];
+    uilabel(gLoad, 'Text', ' Region');
+    uibutton(gLoad, 'push','Text', 'SelfCH1', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'self_CH1', 'region'});
+    uibutton(gLoad, 'push','Text', 'SelfCH2', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'self_CH2', 'region'});
+    uibutton(gLoad, 'push','Text', 'Folder', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'folder', 'region'});
+    uibutton(gLoad, 'push','Text', 'File', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'file', 'region'});
+    uilabel(gLoad, 'Text', ' Region maker');
+    uibutton(gLoad, 'push','Text', 'SelfCH1', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'self_CH1', 'regionMarker'});
+    uibutton(gLoad, 'push','Text', 'SelfCH2', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'self_CH2', 'regionMarker'});
+    uibutton(gLoad, 'push','Text', 'Folder', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'folder', 'regionMarker'});
+    uibutton(gLoad, 'push','Text', 'File', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'file', 'regionMarker'});
+    uilabel(gLoad, 'Text', ' Landmark');
+    uibutton(gLoad, 'push','Text', 'SelfCH1', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'self_CH1', 'landmark'});
+    uibutton(gLoad, 'push','Text', 'SelfCH2', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'self_CH2', 'landmark'});
+    uibutton(gLoad, 'push','Text', 'Folder', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'folder', 'landmark'});
+    uibutton(gLoad, 'push','Text', 'File', 'ButtonPushedFcn', {@ui.msk.readMsk, f, 'file', 'landmark'});
 
     % list of added masks
-    t = uitable(bLoad, 'Data', zeros(0, 3), 'Tag', 'mskTable');
+    t = uitable(bLoad, 'Data', zeros(0, 3), 'Tag', 'mskTable','RowName',[]);
     t.ColumnName = {'', 'Mask name', 'Type'};
     t.ColumnEditable = [false, false, false];
-    t.ColumnWidth = {15, 170, 65};
+    t.ColumnWidth = {20,80,196};
     t.CellSelectionCallback = {@ui.msk.mskLstViewer, f, 'select'};
-    uix.Empty('Parent', bLoad);
-    bLoadBtn = uix.HButtonBox('Parent', bLoad);
-    uicontrol(bLoadBtn, 'String', 'Remove', 'Callback', {@ui.msk.mskLstViewer, f, 'remove'});
-    uix.Empty('Parent', bLoad);
+
+    uibutton(bLoad, 'push','Text', 'Remove', 'ButtonPushedFcn', {@ui.msk.mskLstViewer, f, 'remove'});
+    uilabel(bLoad,'Text','');
     
     % Manually Select
-    gSelect = uix.Grid('Parent', bLoad, 'Spacing', 5, 'Padding', 5);
-    uicontrol(gSelect, 'Style', 'text', 'String', 'Manually Select', 'HorizontalAlignment', 'left');
-    uicontrol(gSelect, 'String', 'Clear', 'Tag','Clear', 'Callback', {@ui.mov.updtCursorFunMov2,f,'clear'});
-    uicontrol(gSelect, 'String', 'Add', 'Tag','AddBuilder', 'Callback', {@ui.mov.updtCursorFunMov2,f,'add'});
-    uicontrol(gSelect, 'String', 'Remove', 'Tag','RemoveBuilder', 'Callback', {@ui.mov.updtCursorFunMov2,f,'rm'});
-    gSelect.Widths = [-1, 60, 60, 60];
-    gSelect.Heights = [20];
-    
-    bLoad.Heights = [90, -1, 3, 20, 5, 25];
+    gSelect = uigridlayout(bLoad,'ColumnWidth',{'1x',60,60,60},'RowHeight',{'1x'},'Padding',[0,0,0,0],'RowSpacing',5,'ColumnSpacing',5);
+    uilabel(gSelect, 'Text', ' Manually Select');
+    uibutton(gSelect, 'push','Text', 'Clear', 'Tag','Clear', 'ButtonPushedFcn', {@ui.mov.updtCursorFunMov2,f,'clear'});
+    uibutton(gSelect, 'push','Text', 'Add', 'Tag','AddBuilder', 'ButtonPushedFcn', {@ui.mov.updtCursorFunMov2,f,'add'});
+    uibutton(gSelect, 'push','Text', 'Remove', 'Tag','RemoveBuilder', 'ButtonPushedFcn', {@ui.mov.updtCursorFunMov2,f,'rm'});
     
     % save masks and back to main UI ----
-    bSave = uix.VBox('Parent', pSave, 'Spacing', 5, 'Padding', 5);
-    gSave = uix.Grid('Parent', bSave, 'Spacing', 5, 'Padding', 3);
-    uicontrol(gSave, 'Style', 'text', 'String', 'Role of region markers', 'HorizontalAlignment', 'left');
-    uicontrol(gSave, 'Style', 'text', 'String', 'Combine region masks', 'HorizontalAlignment', 'left');
-    uicontrol(gSave, 'Style', 'text', 'String', 'Combine landmark masks', 'HorizontalAlignment', 'left');
-    uicontrol(gSave, 'Style', 'popupmenu', 'String', {'Segment region', 'Remove region'}, 'Value', 1, 'Tag', 'saveMarkerOp');
-    uicontrol(gSave, 'Style', 'popupmenu', 'String', {'OR', 'AND', 'SUB'}, 'Value', 1, 'Tag', 'saveMskRegOp');
-    uicontrol(gSave, 'Style', 'popupmenu', 'String', {'OR', 'AND', 'SUB'}, 'Value', 1, 'Tag', 'saveMskLmkOp');
-    gSave.Widths = [-1, 120];
-    gSave.Heights = [20, 20, 20];
-    uix.Empty('Parent', bSave);
-    bSaveBtn = uix.HButtonBox('Parent', bSave, 'Spacing', 20);
-    uicontrol(bSaveBtn, 'String', 'Apply & back', 'Callback', {@ui.msk.saveMsk, f, 0});
-    uicontrol(bSaveBtn, 'String', 'Discard & back', 'Callback', {@ui.msk.saveMsk, f, 1});
-    bSaveBtn.ButtonSize = [100, 20];
-    uix.Empty('Parent', bSave);
-    bSave.Heights = [75, -1, 20, 5];
+    bSave = uigridlayout(pSave,'ColumnWidth',{'1x'},'RowHeight',{20,75,20},'Padding',[0,5,0,0],'RowSpacing',5);
+    uilabel(bSave,'Text','Save regions/landmarks','BackgroundColor',[0 0.3 0.6],'FontColor','white');
+    gSave = uigridlayout(bSave,'ColumnWidth',{'1x',120},'RowHeight',{20,20,20},'Padding',[0,0,0,0],'RowSpacing',5,'ColumnSpacing',5);
+    uilabel(gSave, 'Text', ' Role of region markers');
+    uidropdown(gSave, 'Items', {'Segment region', 'Remove region'}, 'Tag', 'saveMarkerOp');
+    uilabel(gSave, 'Text', ' Combine region masks');
+    uidropdown(gSave, 'Items', {'OR', 'AND', 'SUB'}, 'Tag', 'saveMskRegOp');
+    uilabel(gSave, 'Text', ' Combine landmark masks');
+    uidropdown(gSave, 'Items', {'OR', 'AND', 'SUB'}, 'Tag', 'saveMskLmkOp');
+
+    bSaveBtn = uigridlayout(bSave,'ColumnWidth',{'1x','1x'},'RowHeight',{'1x'},'Padding',[0,0,0,0],'RowSpacing',5,'ColumnSpacing',20);
+    uibutton(bSaveBtn, 'Text', 'Apply & back', 'ButtonPushedFcn', {@ui.msk.saveMsk, f, 0});
+    uibutton(bSaveBtn, 'Text', 'Discard & back', 'ButtonPushedFcn', {@ui.msk.saveMsk, f, 1});
 
 end 

@@ -16,11 +16,11 @@ if op==1
     image(axNow,'CData',m0,'CDataMapping','scaled');
     W = axNow.Position(3);
     if W>600
-        xxtik = [1,20,40,60,80,100];
+        xxtik = [1,20,40,60,80,99];
     elseif W>300
-        xxtik = [1,50,100];
+        xxtik = [1,50,99];
     else
-        xxtik = [1,100];
+        xxtik = [1,99];
     end    
     %xxtik = axNow.XTick;
     xxlbl = cellstr(num2str(m0(xxtik)'));

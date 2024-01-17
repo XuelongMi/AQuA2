@@ -3,13 +3,13 @@ function getOutputFolder(~,~,f)
     opts = getappdata(f,'opts');
     
     % SP, 18.07.16
-    definput = {'_AQuA'};
+    definput = {'_AQuA2'};
     selname = inputdlg('Type desired suffix for output files name:',...
         'Output files',[1 75],definput);
     
     selname = char(selname);
     if isempty(selname)
-        selname = '_AQuA';
+        selname = '_AQuA2';
     end
     file0 = [opts.fileName1,selname];
     clear definput selname

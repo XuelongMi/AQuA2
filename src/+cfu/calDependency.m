@@ -2,7 +2,7 @@ function [pvalue,ds,distribution] = calDependency(sequence1, sequence2, possible
 % condition is the first variable, occurrence is the second.
 
     if(~exist('possibleDists','var'))
-       possibleDists = 1:10; 
+       possibleDists = 0:10; 
     end
     sequence1 = reshape(sequence1,[1,numel(sequence1)]);
     sequence2 = reshape(sequence2,[1,numel(sequence2)]);

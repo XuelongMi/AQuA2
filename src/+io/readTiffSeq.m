@@ -1,4 +1,4 @@
-function [img,maxVal] = readTiffSeq( fName, rescaleImg )
+function [img,BitDepth] = readTiffSeq( fName, rescaleImg )
 %READTIFF Read image sequence
 
 if ~exist('rescaleImg','var')
@@ -6,9 +6,9 @@ if ~exist('rescaleImg','var')
 end
 
 info = imfinfo(fName);
-maxVal = 2^info(1).BitDepth-1;
+BitDepth = info(1).BitDepth;
 nFrames = numel(info);
-oneFrame = imread(fName, 1);
+maxVal = 2^(BitDepth)-1;
 % change
 H = info(1).Height;
 W = info(1).Width;

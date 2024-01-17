@@ -9,7 +9,7 @@ fCmd = btSt.ftsCmd;
 %% channel 1
 fts = getappdata(f,'fts1');
 nEvt = numel(fts.basic.area);
-xSel = ones(nEvt,1);
+xSel = true(nEvt,1);
 
 for ii=1:numel(fCmd)
     s0 = tb.Data{ii,1};
@@ -28,8 +28,8 @@ for ii=1:numel(fCmd)
     end
     cmd0 = ['f0=',fCmd{ii},';'];
     eval(cmd0);
-    xSel(isnan(f0)) = 0;
-    xSel(f0<xmin | f0>xmax) = 0;
+    xSel(isnan(f0)) = false;
+    xSel(f0<xmin | f0>xmax) = false;
 end
 btSt.filterMsk1 = xSel;
 
@@ -37,7 +37,7 @@ btSt.filterMsk1 = xSel;
 fts = getappdata(f,'fts2');
 if (~isempty(fts))
     nEvt = numel(fts.basic.area);
-    xSel = ones(nEvt,1);
+    xSel = true(nEvt,1);
 
     for ii=1:numel(fCmd)
         s0 = tb.Data{ii,1};
@@ -56,8 +56,8 @@ if (~isempty(fts))
         end
         cmd0 = ['f0=',fCmd{ii},';'];
         eval(cmd0);
-        xSel(isnan(f0)) = 0;
-        xSel(f0<xmin | f0>xmax) = 0;
+        xSel(isnan(f0)) = false;
+        xSel(f0<xmin | f0>xmax) = false;
     end
     btSt.filterMsk2 = xSel;
 end

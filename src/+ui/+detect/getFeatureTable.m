@@ -4,9 +4,13 @@ bd = getappdata(f,'bd');
 opts = getappdata(f,'opts');
 if bd.isKey('landmk')
     bd1 = bd('landmk');
-    lmkLst = cell(numel(bd1),1);
-    for ii=1:numel(bd1)
-        lmkLst{ii} = bd1{ii}{1};
+    if opts.sz(3)==1
+        lmkLst = cell(numel(bd1),1);
+        for ii=1:numel(bd1)
+            lmkLst{ii} = bd1{ii}{1};
+        end
+    else
+        lmkLst = [];
     end
 else
     lmkLst = [];
@@ -42,6 +46,8 @@ function featureTable = getFeatureTable00(fts,evtLst,lmkLst,f)
     ftsName = cell(nFt,1);
     ftsCnt = 1;
     dixx = fts.notes.propDirectionOrder;
+    valid = false(100,1);
+
     for ii=1:nFt
         cmdSel0 = tb.Script{ii};
         ftsName0 = tb.Name{ii};
@@ -50,27 +56,25 @@ function featureTable = getFeatureTable00(fts,evtLst,lmkLst,f)
             for xxLmk=1:numel(lmkLst)
                 try
                     eval([cmdSel0,';']);
+                    valid(ftsCnt) = true;
                 catch
-                    fprintf('Feature "%s" not used\n',ftsName0)
+                    fprintf('Feature "%s" not selected\n',ftsName0)
                     x = nan(nEvt,1);
                 end
                 ftsTb(ftsCnt,:) = num2cell(reshape(x,1,[]));
                 ftsName1 = [ftsName0,' - landmark ',num2str(xxLmk)];
-                ftsName{ftsCnt} = ftsName1;
-                ftsCnt = ftsCnt + 1;
             end
         elseif ~isempty(strfind(cmdSel0,'xxDi')) %#ok<STREMP>
-            for xxDi=1:4
+            for xxDi=1:numel(dixx)
                 try
                     eval([cmdSel0,';']);
                     ftsTb(ftsCnt,:) = num2cell(reshape(x,1,[]));
+                    valid(ftsCnt) = true;
                 catch
-                    fprintf('Feature "%s" not used\n',ftsName0)
-                    ftsTb(ftsCnt,:) = nan;
+                    fprintf('Feature "%s" not selected\n',ftsName0)
+%                     ftsTb(ftsCnt,:) = nan;
                 end            
                 ftsName1 = [ftsName0,' - ',dixx{xxDi}];
-                ftsName{ftsCnt} = ftsName1;
-                ftsCnt = ftsCnt + 1;
             end
         else
             try
@@ -80,14 +84,18 @@ function featureTable = getFeatureTable00(fts,evtLst,lmkLst,f)
                 else
                     ftsTb(ftsCnt,:) = num2cell(reshape(x,1,[]));            
                 end
+                valid(ftsCnt) = true;
             catch
-                fprintf('Feature "%s" not used\n',ftsName0)
+                fprintf('Feature "%s" not selected\n',ftsName0)
                 ftsTb(ftsCnt,:) = num2cell(nan(1,nEvt));
             end
-            ftsName{ftsCnt} = ftsName0;
-            ftsCnt = ftsCnt + 1;
+            ftsName1 = ftsName0;
         end
+        ftsName{ftsCnt} = ftsName1;
+        ftsCnt = ftsCnt + 1;
     end
+    valid = valid(1:ftsCnt-1);
+    ftsTb = ftsTb(valid,:); ftsName = ftsName(valid);
     featureTable = table(ftsTb,'RowNames',ftsName);
 end
 

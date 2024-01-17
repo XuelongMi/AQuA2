@@ -1,36 +1,30 @@
 function updtCursorFunMov(~,~,f,op,lbl)
     btSt = getappdata(f,'btSt');
+    opts = getappdata(f,'opts');
     % btSt.rmLbl = lbl;
     % setappdata(f,'btSt');
     
     fh = guidata(f);
-    col = getappdata(f,'col');
+    col = [.96,.96,.96];
     fh.AddLm.BackgroundColor = col;
     fh.AddCell.BackgroundColor = col;
-    fh.AddLm.ForegroundColor = [0 0 0];
-    fh.AddCell.ForegroundColor = [0 0 0];
     fh.RmLm.BackgroundColor = col;
     fh.RmCell.BackgroundColor = col;
-    fh.RmLm.ForegroundColor = [0 0 0];
-    fh.RmCell.ForegroundColor = [0 0 0];
     fh.DragLm.BackgroundColor = col;
     fh.DragCell.BackgroundColor = col;
-    fh.DragLm.ForegroundColor = [0 0 0];
-    fh.DragCell.ForegroundColor = [0 0 0];
     fh.NameCell.BackgroundColor = col;
-    fh.NameCell.ForegroundColor = [0 0 0];
     fh.NameLm.BackgroundColor = col;
-    fh.NameLm.ForegroundColor = [0 0 0];
     fh.viewFavClick.BackgroundColor = col;
     fh.delResClick.BackgroundColor = col;
-    fh.viewFavClick.ForegroundColor = [0 0 0];
-    fh.delResClick.ForegroundColor = [0 0 0];
     fh.extract.BackgroundColor = col;
-    fh.extract.ForegroundColor = [0 0 0];
+    fh.checkROI.BackgroundColor = col;
+    fh.checkROI.BackgroundColor = col;
     
-    fh.ims.im1.ButtonDownFcn = [];
-    fh.ims.im2a.ButtonDownFcn = [];
-    fh.ims.im2b.ButtonDownFcn = [];
+    if opts.sz(3)==1
+        fh.ims.im1.ButtonDownFcn = [];
+        fh.ims.im2a.ButtonDownFcn = [];
+        fh.ims.im2b.ButtonDownFcn = [];
+    end
     
     if strcmp([op,lbl],btSt.clickSt)==1
         btSt.clickSt = [];
@@ -41,54 +35,51 @@ function updtCursorFunMov(~,~,f,op,lbl)
     switch lbl
         case 'cell'
             if strcmp(op,'add')
-                fh.AddCell.BackgroundColor = [0.3 0.3 0.7];
-                fh.AddCell.ForegroundColor = [1 1 1];
+                fh.AddCell.BackgroundColor = [.8,.8,.8];
             elseif strcmp(op,'rm')
-                fh.RmCell.BackgroundColor = [0.3 0.3 0.7];
-                fh.RmCell.ForegroundColor = [1 1 1];
+                fh.RmCell.BackgroundColor = [.8,.8,.8];
             elseif strcmp(op,'name')
-                fh.NameCell.BackgroundColor = [0.3 0.3 0.7];
-                fh.NameCell.ForegroundColor = [1 1 1];
+                fh.NameCell.BackgroundColor = [.8,.8,.8];
             elseif strcmp(op,'drag')
-                fh.DragCell.BackgroundColor = [0.3 0.3 0.7];
-                fh.DragCell.ForegroundColor = [1 1 1];
+                fh.DragCell.BackgroundColor = [.8,.8,.8];
             end
         case 'landmk'
             if strcmp(op,'add')
-                fh.AddLm.BackgroundColor = [0.3 0.3 0.7];
-                fh.AddLm.ForegroundColor = [1 1 1];
+                fh.AddLm.BackgroundColor = [.8,.8,.8];
             elseif strcmp(op,'rm')
-                fh.RmLm.BackgroundColor = [0.3 0.3 0.7];
-                fh.RmLm.ForegroundColor = [1 1 1];
+                fh.RmLm.BackgroundColor = [.8,.8,.8];
             elseif strcmp(op,'name')
-                fh.NameLm.BackgroundColor = [0.3 0.3 0.7];
-                fh.NameLm.ForegroundColor = [1 1 1];
+                fh.NameLm.BackgroundColor = [.8,.8,.8];
             elseif strcmp(op,'drag')
-                fh.DragLm.BackgroundColor = [0.3 0.3 0.7];
-                fh.DragLm.ForegroundColor = [1 1 1];
+                fh.DragLm.BackgroundColor = [.8,.8,.8];
             end
         case 'viewFav'
-            fh.viewFavClick.BackgroundColor = [0.3 0.3 0.7];
-            fh.viewFavClick.ForegroundColor = [1 1 1];
+            if fh.viewFavClick.Value==1
+                fh.viewFavClick.BackgroundColor = [.8,.8,.8];
+            end
         case 'delRes'
-            fh.delResClick.BackgroundColor = [0.3 0.3 0.7];
-            fh.delResClick.ForegroundColor = [1 1 1];
+            if fh.delResClick.Value==1
+                fh.delResClick.BackgroundColor = [.8,.8,.8];
+            end
+        case 'roi'
+            if fh.checkROI.Value==1
+                fh.checkROI.BackgroundColor = [.8,.8,.8];
+            end
     end
     
     if strcmp(op,'add')
         ui.mov.drawReg([],[],f,op,lbl);
         fh.AddLm.BackgroundColor = col;
         fh.AddCell.BackgroundColor = col;
-        fh.AddLm.ForegroundColor = [0 0 0];
-        fh.AddCell.ForegroundColor = [0 0 0];
         btSt.clickSt = [];
-    elseif strcmp(op,'extract')
-        fh.extract.BackgroundColor = [0.3 0.3 0.7];
-        fh.extract.ForegroundColor = [1 1 1];
+    elseif strcmp(op,'check')
+        fh.viewFavClick.Value = 0;
+        fh.delResClick.Value = 0;
         ui.mov.drawReg([],[],f,op,lbl);
-        fh.extract.BackgroundColor = col;
-        fh.extract.ForegroundColor = [0 0 0];
+        fh.checkROI.BackgroundColor = col;
+        fh.checkROI.BackgroundColor = col;
         btSt.clickSt = [];
+        fh.checkROI.Value = 0;
     elseif strcmp(op,'addrm')&&strcmp(lbl,'addAll')
         ui.mov.movAddAll([],[],f);
         btSt = getappdata(f,'btSt');
@@ -96,11 +87,36 @@ function updtCursorFunMov(~,~,f,op,lbl)
         ui.mov.dragReg([],[],f,op,lbl);
         btSt.clickSt = [];
     else
-        fh.ims.im1.ButtonDownFcn = {@ui.mov.movClick,f,op,lbl};
-        fh.ims.im2a.ButtonDownFcn = {@ui.mov.movClick,f,op,lbl};
-        fh.ims.im2b.ButtonDownFcn = {@ui.mov.movClick,f,op,lbl};
-        guidata(f,fh);
-        btSt.clickSt = [op,lbl];
+        if strcmp(lbl,'viewFav') || strcmp(lbl,'delRes')
+            if strcmp(lbl,'viewFav')
+                fh.delResClick.Value = 0;
+            else
+                fh.viewFavClick.Value = 0;
+            end
+        end
+        if opts.sz(3)==1
+            % 2D
+            fh.ims.im1.ButtonDownFcn = {@ui.mov.movClick,f,op,lbl};
+            fh.ims.im2a.ButtonDownFcn = {@ui.mov.movClick,f,op,lbl};
+            fh.ims.im2b.ButtonDownFcn = {@ui.mov.movClick,f,op,lbl};
+            guidata(f,fh);
+            btSt.clickSt = [op,lbl];
+        else
+            if strcmp(lbl,'viewFav') || strcmp(lbl,'delRes')
+                % 3D view / remove
+                if fh.viewFavClick.Value==1 || fh.delResClick.Value==1
+                    fh.filterTable.Visible = 'off';
+                    fh.sliceSelect.Visible = 'on';
+                    if fh.Pan.Value == 0
+                        fh.Pan.Value = 1;
+                        ui.mov.sliceView(fh.Pan,[],f);
+                    end
+                else
+                    fh.filterTable.Visible = 'on';
+                    fh.sliceSelect.Visible = 'off';
+                end
+            end
+        end
     end
         
     setappdata(f,'btSt',btSt);    

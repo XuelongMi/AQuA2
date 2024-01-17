@@ -36,14 +36,15 @@ function CFURun(~,~,f)
     minNumEvt = str2double(answer{2});
     
     ff = waitbar(0,'Calculating cfu info');
-    [cfuRegions1,CFU_lst1] = cfu.CFU_minMeasure(cfu_pre1,true(numel(cfu_pre1.evtIhw),1),fh.averPro1.^2,opts.sz,alpha,minNumEvt,1);
+    [cfuRegions1,CFU_lst1] = cfu.CFU_minMeasure(cfu_pre1,true(numel(cfu_pre1.evtIhw),1),fh.averPro1,opts.sz,alpha,minNumEvt,1);
+    title('CFU in channel 1');
     datOrg1 = getappdata(f, 'datOrg1');
     [H,W,T] = size(datOrg1);
     datVec = reshape(datOrg1,[],T);
     clear datOrg1;
-    dFOrg1 = getappdata(f, 'dFOrg1');
-    dFVec = reshape(dFOrg1,[],T);
-    clear dFOrg1;
+    dF1 = getappdata(f, 'dF1');
+    dFVec = reshape(dF1,[],T);
+    clear dF1;
     cfuCurves1 = zeros(numel(cfuRegions1),T);
     cfuDFCurves1 = zeros(numel(cfuRegions1),T);
     for i = 1:numel(cfuRegions1)
@@ -75,7 +76,7 @@ function CFURun(~,~,f)
     cfuInfo = cell(nCFU,6);
     for i = 1:nCFU
         cfuInfo{i,1} = i;
-        cfuInfo{i,2} = 1;   % Slice
+        cfuInfo{i,2} = CFU_lst1{i};   % Slice
         cfuInfo{i,3} = cfuRegions1{i};
         cfuInfo{i,4} = cfuOccurrence1(i,:);
         cfuInfo{i,5} = cfuCurves1(i,:);
@@ -84,13 +85,14 @@ function CFURun(~,~,f)
     setappdata(f,'cfuInfo1',cfuInfo);
     
     if(~opts.singleChannel)
-        [cfuRegions2,CFU_lst2] = cfu.CFU_minMeasure(cfu_pre2,true(numel(cfu_pre2.evtIhw),1),fh.averPro2.^2,opts.sz,alpha,minNumEvt,1);    
+        [cfuRegions2,CFU_lst2] = cfu.CFU_minMeasure(cfu_pre2,true(numel(cfu_pre2.evtIhw),1),fh.averPro2,opts.sz,alpha,minNumEvt,1);    
+        title('CFU in channel 2');
         datOrg2 = getappdata(f, 'datOrg2');
         datVec = reshape(datOrg2,[],T);
         clear datOrg2;
-        dFOrg1 = getappdata(f, 'dFOrg2');
-        dFVec = reshape(dFOrg2,[],T);
-        clear dFOrg2;
+        dF2 = getappdata(f, 'dF2');
+        dFVec = reshape(dF2,[],T);
+        clear dF2;
         cfuCurves2 = zeros(numel(cfuRegions2),T);
         cfuDFCurves2 = zeros(numel(cfuRegions2),T);
         for i = 1:numel(cfuRegions2)
@@ -122,7 +124,7 @@ function CFURun(~,~,f)
         cfuInfo = cell(nCFU,6);
         for i = 1:nCFU
             cfuInfo{i,1} = i;
-            cfuInfo{i,2} = 1;   % Slice
+            cfuInfo{i,2} = CFU_lst2{i};   % Slice
             cfuInfo{i,3} = cfuRegions2{i};
             cfuInfo{i,4} = cfuOccurrence2(i,:);
             cfuInfo{i,5} = cfuCurves2(i,:);

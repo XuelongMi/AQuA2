@@ -1,4 +1,4 @@
-function [ rise19,fall91,width55,width11,decayTau,pp,rise_80 ] = getCurveStat( x0,spf,foptions,ignoreTau )
+function [ rise19,fall91,width55,width11,decayTau,pp,rise_50 ] = getCurveStat( x0,spf,foptions,ignoreTau )
 %GETCURVESTAT get rising, falling and half width of a curve, in second
 % Input is Delta F/F0
 
@@ -50,21 +50,19 @@ if numel(y)>=2 && sum(isnan(y))==0 && sum(isinf(y))==0 && isreal(y) && ignoreTau
     c0 = coeffvalues(f);
     decayTau = -1/c0(2)*spf;
     if decayTau<0 || decayTau>30
-        %figure;plot(y);
         fprintf('Decay Tau: %f\n',decayTau)
-        %keyboard
     end
 end
 
 %% rising time
-thrVec = 0.7:0.1:0.9;
-rise_80 = 0;
+thrVec = 0.4:0.1:0.6;
+rise_50 = 0;
 for nn=1:numel(thrVec)
     ixPre = find(x0(1:tPeak)<=xPeak*thrVec(nn),1,'last');
     if isempty(ixPre)
         ixPre = 1;
     end
-    rise_80 = rise_80 + ixPre/numel(thrVec);
+    rise_50 = rise_50 + ixPre/numel(thrVec);
 end
 
 

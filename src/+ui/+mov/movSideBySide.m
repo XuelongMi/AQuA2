@@ -1,25 +1,23 @@
 function movSideBySide(~,~,f)
 fh = guidata(f);
-btSt = getappdata(f,'btSt');
-col = getappdata(f,'col');
 n = round(fh.sldMov.Value);
-if ~isfield(btSt,'sbs')
-    btSt.sbs = 0;
-end
-if btSt.sbs==0
-    btSt.sbs = 1;
-    fh.sbs.BackgroundColor = [0.3 0.3 0.7];
-    fh.movTop.Selection = 2;
-    fh.pBrightness.Selection = 2;
+
+if fh.sbs.Value
+    fh.sbs.BackgroundColor = [0.8 0.8 0.8];
+    fh.bMov1Top.Visible = 'off';
+    fh.bMov2Top.Visible = 'on';
+    fh.pBrightness.Visible = 'off';
+    fh.pBrightnessSideBySide.Visible = 'on';
 else
-    btSt.sbs = 0;
-    fh.sbs.BackgroundColor = col;
-    fh.movTop.Selection = 1;
-    fh.pBrightness.Selection = 1;
+    fh.sbs.BackgroundColor = [0.96 0.96 0.96];
+    fh.bMov1Top.Visible = 'on';
+    fh.bMov2Top.Visible = 'off';
+    fh.pBrightness.Visible = 'on';
+    fh.pBrightnessSideBySide.Visible = 'off';
 end
-setappdata(f,'btSt',btSt);
+pause(1e-4);
 if n>0
-    ui.over.adjMov([],[],f,1)
+%     ui.over.adjMov([],[],f,1)
     ui.movStep(f,n,[],1);
 end
 end

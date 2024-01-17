@@ -8,14 +8,14 @@ opts = getappdata(f,'opts');
 if op==0
     tb = readtable('userFeatures.csv','Delimiter',',');
     setappdata(f,'userFeatures',tb);
-    fh.overlayFeature.String = tb.Name(2:end);
+    fh.overlayFeature.Items = tb.Name(2:end);
     fprintf('Reading done.\n');
     return
 end
 
 % enable or disable feature overlay
 if op==1
-    ovName = fh.overlayDat.String{fh.overlayDat.Value};
+    ovName = fh.overlayDat.Value;
     if strcmp(ovName,'Events')
         xxx = 'on';
     else        
@@ -27,42 +27,37 @@ if op==1
     fh.overlayScale.Enable = xxx;
     fh.overlayPropDi.Enable = xxx;
     fh.overlayLmk.Enable = xxx;
-    fh.sldMinOv.Enable = xxx;
-    fh.sldMaxOv.Enable = xxx;
 %     fh.sldBriOv.Enable = xxx;
     fh.updtFeature1.Enable = xxx;
     return
 end
 
-% calcuate overlay
-idx = fh.overlayDat.Value;
-ovSel = fh.overlayDat.String{idx};
+% colorbar setting
+if strcmp(fh.pMovColMap.Visible,'on') && strcmp(fh.overlayColor.Value,'Random')
+    fh.pMovColMap.Visible = 'off';
+elseif strcmp(fh.pMovColMap.Visible,'off') && ~strcmp(fh.overlayColor.Value,'Random')
+    fh.pMovColMap.Visible = 'on';
+end
 
+
+% calcuate overlay
+ovSel = fh.overlayDat.Value;
 btSt = getappdata(f,'btSt');
 btSt.overlayDatSel = ovSel;
 btSt.overlayColorSel = 'Random';
 
 % update color code for events
 if (strcmp(ovSel,'Events') && strcmp(fh.updtFeature1.Enable, 'on'))    
-    ovFea = fh.overlayFeature.String{fh.overlayFeature.Value};
-    ovCol = fh.overlayColor.String{fh.overlayColor.Value};    
-    if strcmp(ovFea,'Index')
-        ovCol = 'Random';
-        fh.overlayColor.Value = 1;
-    else
-        if strcmp(ovCol,'Random')
-            ovCol = 'GreenRed';
-            fh.overlayColor.Value = 2;
-        end
-    end    
+    ovFea = fh.overlayFeature.Value;
+    ovCol = fh.overlayColor.Value;    
     
     btSt.overlayFeatureSel = ovFea;
     btSt.overlayColorSel = ovCol;
         
-    xxTrans = fh.overlayTrans.String{fh.overlayTrans.Value};  % transform
-    xxScale = fh.overlayScale.String{fh.overlayScale.Value};  % scale
-    xxDi = fh.overlayPropDi.Value;  % direction
-    xxLmk = str2double(fh.overlayLmk.String);  % landmark
+    xxTrans = 'None';%fh.overlayTrans.Value;  % transform
+    xxScale = 'None';%fh.overlayScale.Value;  % scale
+    xxDi = 'None';%fh.overlayPropDi.Value;  % direction
+    xxLmk = 'None';%str2double(fh.overlayLmk.Value);  % landmark
         
     %% channel 1
     fts = getappdata(f,'fts1');
@@ -150,17 +145,6 @@ if (strcmp(ovSel,'Events') && strcmp(fh.updtFeature1.Enable, 'on'))
     scl.minOv = min(cVal);
     scl.maxOv = max(cVal);
     setappdata(f,'scl',scl);
-    
-    fh.sldMinOv.Min = nanmin(cVal);
-    fh.sldMinOv.Max = nanmax(cVal);
-    fh.sldMinOv.Value = nanmin(cVal);
-    fh.sldMaxOv.Min = nanmin(cVal);
-    fh.sldMaxOv.Max = nanmax(cVal);
-    fh.sldMaxOv.Value = nanmax(cVal);
-    fh.sldMinOv.Enable = 'on';
-    fh.sldMaxOv.Enable = 'on';
-    fh.txtMinOv.String = ['Min:',num2str(scl.minOv)];
-    fh.txtMaxOv.String = ['Max:',num2str(scl.maxOv)];
 else
     % re-shuffle color code in other cases
     if ~strcmp(ovSel,'None')

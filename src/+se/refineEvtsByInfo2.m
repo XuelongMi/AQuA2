@@ -12,8 +12,6 @@ function [evtLst,majorityEvt,mergingInfo,refineWork] = refineEvtsByInfo2(evtLst,
     ext = opts.minDur;
     %% refine: use neighbor event information
     % no use, for checking results
-%     observeCurve = cell(0);
-%     cntOb = 0;
     
     refineCheckList = mergingInfo.refineCheckList;
     sourceLabels = zeros(N,1);
@@ -31,17 +29,14 @@ function [evtLst,majorityEvt,mergingInfo,refineWork] = refineEvtsByInfo2(evtLst,
         neibAll = mergingInfo.neibLst{i};
         belongSE = seLabel(neibAll);
         neibOut = neibAll(belongSE~=curSPLabel);
-        
         neibIn = neibAll(belongSE==curSPLabel);
+
         curPeak = majorityEvt{i}.tPeak;
         nPeak = []; 
         for j = 1:numel(neibIn)
            nPeak = [nPeak;majorityEvt{neibIn(j)}.tPeak]; 
         end
-%         nPeak = mean(nPeak);
-%         if(abs(curPeak-nPeak)>numel(majorityEvt{i}.TW)/3)
-            neibOut = union(neibOut,neibIn(abs(curPeak-nPeak)>numel(majorityEvt{i}.TW)/3));
-%         end
+        neibOut = union(neibOut,neibIn(abs(curPeak-nPeak)>numel(majorityEvt{i}.TW)/3));
         neibOut = neibOut(neibOut<=N);
         if(isempty(neibOut))
             continue;
@@ -149,9 +144,7 @@ function [evtLst,majorityEvt,mergingInfo,refineWork] = refineEvtsByInfo2(evtLst,
             end
             curvesAlign = balanceCurves(curvesAlign);
             cor = corr(balanceCurves(nCurve(nTW))',curvesAlign');
-%             cor = corr(nCurve(nTW)',curvesAlign');
             [r,id] = max(cor);
-            % figure;yyaxis left;plot(nTW,balanceCurves(nCurve(nTW)));yyaxis right;plot(nTW,curvesAlign(id,:));title(num2str(r))
             zscore = r/sqrt(1-r^2)*sqrt(L-2);
             pVal = tcdf(zscore,L-2,'upper');
             
@@ -162,7 +155,6 @@ function [evtLst,majorityEvt,mergingInfo,refineWork] = refineEvtsByInfo2(evtLst,
             end
             curvesAlignSmo = balanceCurves(curvesAlignSmo);
             corSmo = corr(balanceCurves(nCurveSmo(nTW))',curvesAlignSmo');
-%             corSmo = corr(nCurveSmo(nTW)',curvesAlignSmo');
             [rSmo,idSmo] = max(corSmo);
             LSmo = round(L/2.2);
             zscore = rSmo/sqrt(1-rSmo^2)*sqrt(LSmo-2);
@@ -194,10 +186,6 @@ function [evtLst,majorityEvt,mergingInfo,refineWork] = refineEvtsByInfo2(evtLst,
             end
         end
 
-%         if(cntPeak==1)
-%             %% check whether there are multiple peaks in same super event.
-%             
-%         end
         peakForFindGap = peakPosition;
 
         % - Note: Here use the whole event footprint to find gap, since
@@ -214,15 +202,6 @@ function [evtLst,majorityEvt,mergingInfo,refineWork] = refineEvtsByInfo2(evtLst,
             GapPoint = [GapPoint,tGap];
         end
         GapPoint = union(GapPoint,[t00,t11]);
-
-        % for checking results
-%         cntOb = cntOb + 1;
-%         observeCurve{cntOb}.curveSmo = curveThisPartSmo;
-%         observeCurve{cntOb}.TW = t00:t11;
-%         observeCurve{cntOb}.curve = curveThisPart;
-%         observeCurve{cntOb}.GapPoint = GapPoint;
-%         observeCurve{cntOb}.peakPosition = peakPosition;
-
 
         % minimum point for cut
         if(numel(GapPoint)>2)
@@ -306,7 +285,7 @@ tScoreCheck = false;
     gap = opts.smoT*2+1;
     s0 = sqrt(median((curveSmo(gap+1:end)-curveSmo(1:end-gap)).^2)/0.9133);
     curveSmo = curveSmo/s0;
-    thrs = (max(curveSmo(curPeakTW))):-opts.ratio:min(curveSmo(curPeakTW));
+    thrs = (max(curveSmo(curPeakTW))):-opts.step:min(curveSmo(curPeakTW));
     thisTW = false(T,1);
     thisTW(curPeakTW) = true;
     containNeiPeak = false(T,1);

@@ -14,7 +14,8 @@ function adjMov(~,~,f)
     rr.thr = fh.sldMskThr.Value;
     rr.minSz = round(10^(fh.sldMskMinSz.Value));
     rr.maxSz = round(10^(fh.sldMskMaxSz.Value));
-    
+    rr.morphoChange = round(fh.sldMskErode_Dilate.Value);
+
     bdMsk{ix} = rr;
     bd('maskLst') = bdMsk;
     setappdata(f,'bd',bd);

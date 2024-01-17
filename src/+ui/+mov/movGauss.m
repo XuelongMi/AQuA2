@@ -8,7 +8,7 @@ if ~isfield(btSt,'GaussFilter')
 end
 if btSt.GaussFilter==0
     btSt.GaussFilter = 1;
-    fh.GaussFilter.BackgroundColor = [0.3 0.3 0.7];
+    fh.GaussFilter.BackgroundColor = [.8,.8,.8];
 else
     btSt.GaussFilter = 0;
     fh.GaussFilter.BackgroundColor = col;

@@ -1,19 +1,23 @@
-function [dFResize,H_resize,W_resize] = normalizeAndResize(dFOrg,opts)
+function [datResize] = normalizeAndResize(datOrg,opts)
+    [H,W,L,~] = size(datOrg);
     scaleRatios = opts.scaleRatios;
-    dFResize = cell(numel(scaleRatios),1);
-    [H,W,T] = size(dFOrg);
-    H_resize = zeros(numel(scaleRatios),1);
-    W_resize = zeros(numel(scaleRatios),1);
+    datResize = cell(numel(scaleRatios),1);
      
     %% Rescl dFOrg
     for i = 1:numel(scaleRatios)
         scaleRatio = scaleRatios(i);
-        dFONN = se.myResize(dFOrg,1/scaleRatio);
-        H0 = floor(H/scaleRatio);
-        W0 = floor(W/scaleRatio);
-        dFONN = dFONN(1:H0,1:W0,:);
-        H_resize(i) = H0;
-        W_resize(i) = W0;
-        dFResize{i} = dFONN*scaleRatio;
+        datDS = se.myResize(datOrg,1/scaleRatio);
+        
+        % consider the possible noise correlation, need to re-estimate noise
+        curVarMap = mean((datDS(:,:,:,2:end) - datDS(:,:,:,1:end-1)).^2,4,'omitnan')/2;
+
+        % correct noise due to truncation
+        var1 = se.myResize(opts.tempVarOrg,1/scaleRatio); 
+        var2 = se.myResize(opts.tempVarOrg*2./opts.correctPars,1/scaleRatio); 
+
+        curStdMap = sqrt(curVarMap.*var2./var1);
+        datDS = datDS./curStdMap;   % since it is only used in seed detection, and seed detection only check single pixel's score. Not need to fitting again.
+        
+        datResize{i} = datDS;     % ==> zscoreMap scaling.
     end
 end

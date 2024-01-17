@@ -5,8 +5,8 @@ function addOne(~,~,f)
     btSt = getappdata(f,'btSt');
     
     try
-        % evtNow = str2double(fh.toolsAddEvt.String);        
-        evtNow = eval(fh.toolsAddEvt1.String);        
+        % evtNow = str2double(fh.toolsAddEvt.Value);        
+        evtNow = eval(fh.toolsAddEvt1.Value);        
         lst = union(evtNow,btSt.evtMngrMsk1);        
         btSt.evtMngrMsk1 = lst;
         setappdata(f,'btSt',btSt);

@@ -4,53 +4,98 @@ function loadOpt(~,~,f)
     opts = getappdata(f,'opts');
     [file,path] = uigetfile('.csv','Choose Parameter file',opts.filePath1);
     if ~isnumeric([path,file])
-        optsOrg = getappdata(f,'opts');
-        opts = ui.proj.csv2struct([path,file]);
-        opts.filePath1 = optsOrg.filePath1;
-        opts.filePath2 = optsOrg.filePath2;
-        opts.fileName1 = optsOrg.fileName1;
-        opts.fileName2 = optsOrg.fileName2;
-        opts.fileNameType1 = optsOrg.fileType1;
-        opts.fileNameType2 = optsOrg.fileType2;
-        opts.sz = optsOrg.sz;
-        opts.maxValueDat = optsOrg.maxValueDat;
-        opts.maxValueDepth = optsOrg.maxValueDepth;
-        opts.frameRate = optsOrg.frameRate;
-        opts.spatialRes = optsOrg.spatialRes;
-        opts.regMaskGap = optsOrg.regMaskGap;
-        setappdata(f,'opts',opts);
+        optsLoad = ui.proj.csv2struct([path,file]);
         
+        opts.registrateCorrect = optsLoad.registrateCorrect;
+        opts.bleachCorrect = optsLoad.bleachCorrect;
+        opts.medSmo = optsLoad.medSmo;
+        opts.smoXY = optsLoad.smoXY;
+
+        opts.thrARScl = optsLoad.thrARScl;
+        opts.minSize = optsLoad.minSize;
+        opts.maxSize = optsLoad.maxSize;
+        opts.minDur = optsLoad.minDur;
+        opts.circularityThr = optsLoad.circularityThr;
+%         opts.spaMergeDist = optsLoad.spaMergeDist;
+
+        opts.needTemp = optsLoad.needTemp;
+        opts.sigThr = optsLoad.sigThr;
+        opts.maxDelay = optsLoad.maxDelay;
+        opts.seedSzRatio = optsLoad.seedSzRatio;
+        opts.needRefine = optsLoad.needRefine;
+        opts.needGrow = optsLoad.needGrow;
+
+        opts.needSpa = optsLoad.needSpa;
+        opts.sourceSzRatio = optsLoad.sourceSzRatio;
+        opts.sourceSensitivity = optsLoad.sourceSensitivity;
+
+        opts.detectGlo = optsLoad.detectGlo;
+        opts.gloDur = optsLoad.gloDur;
+
+        opts.ignoreTau = optsLoad.ignoreTau;
+        opts.propMetric = optsLoad.propMetric;
+        opts.networkFeatures = optsLoad.networkFeatures;
+
+
+        opts.gtwSmo = optsLoad.gtwSmo;
+        opts.ratio = optsLoad.ratio;
+        opts.regMaskGap = optsLoad.regMaskGap;
+        opts.regMaskGap = optsLoad.regMaskGap;
+        opts.cut = optsLoad.cut;
+        opts.movAvgWin = optsLoad.movAvgWin;
+        opts.minShow1 = optsLoad.minShow1;
+        opts.correctTrend = optsLoad.correctTrend;
+        opts.propthrmin = optsLoad.propthrmin;
+        opts.propthrmax = optsLoad.propthrmax;
+        opts.propthrstep = optsLoad.propthrstep;
+        opts.compress = optsLoad.compress;
+        opts.gapExt = optsLoad.gapExt;
+        opts.frameRate = optsLoad.frameRate;
+        opts.spatialRes = optsLoad.spatialRes;
+        opts.northx = optsLoad.northx;
+        opts.northy = optsLoad.northy;
+        opts.TPatch = optsLoad.TPatch;
+        opts.maxSpaScale = optsLoad.maxSpaScale;
+        opts.minSpaScale = optsLoad.minSpaScale;
+        
+        setappdata(f,'opts',opts);
         
         % adjust interface parameters
         fh = guidata(f);
-        fh.bleachCorrect.Value = opts.bleachCorrect;
+        fh.registrateCorrect.Value = fh.registrateCorrect.Items{opts.registrateCorrect};
+        fh.bleachCorrect.Value = fh.bleachCorrect.Items{opts.bleachCorrect};
+        fh.medSmo.Value = num2str(opts.medSmo);
+        fh.smoXY.Value = num2str(opts.smoXY);
+
+        fh.thrArScl.Value = num2str(opts.thrARScl);
+        fh.minSize.Value = num2str(opts.minSize);
+        fh.maxSize.Value = num2str(opts.maxSize);
+        fh.circularityThr.Value = num2str(opts.circularityThr);
+        fh.minDur.Value = num2str(opts.minDur);
+        fh.spaMergeDist.Value = num2str(opts.spaMergeDist);
         
-        fh.thrArScl.String = num2str(opts.thrARScl);
-        fh.smoXY.String = num2str(opts.smoXY);
-        fh.minSize.String = num2str(opts.minSize);
-        fh.smoT.String = num2str(opts.smoT);
+        fh.needTemp.Value = opts.needTemp;
+        fh.seedSzRatio.Value = num2str(opts.seedSzRatio);
+        fh.sigThr.Value = num2str(opts.sigThr);
+        fh.maxDelay.Value = num2str(opts.maxDelay);
+        fh.needRefine.Value = opts.needRefine;
+        fh.needGrow.Value = opts.needGrow;
         
-        fh.minDur.String = num2str(opts.minDur);
-        fh.ratio.String = num2str(opts.ratio);
-        fh.sigThr.String = num2str(opts.sigThr);
-        fh.maxDelay.String = num2str(opts.maxDelay);
-        
-        fh.cRise.String = num2str(opts.cRise);
-        fh.cDelay.String = num2str(opts.cDelay);
-        fh.gtwSmo.String = num2str(opts.gtwSmo);
-        
-        fh.zThr.String = num2str(opts.zThr);
-        
-        fh.ignoreMerge.Value = opts.ignoreMerge;
-        fh.mergeEventDiscon.String = num2str(opts.mergeEventDiscon);
-        fh.mergeEventCorr.String = num2str(opts.mergeEventCorr);
-        fh.mergeEventMaxTimeDif.String = num2str(opts.mergeEventMaxTimeDif);
-        
-        fh.extendEvtRe.Value = opts.extendEvtRe;
-        
+        fh.needSpa.Value = opts.needSpa;
+        fh.sourceSzRatio.Value = num2str(opts.sourceSzRatio);
+        fh.sourceSensitivity.Value = num2str(opts.sourceSensitivity);
+        try
+            fh.whetherExtend.Value = opts.whetherExtend;
+        end
+
+        fh.detectGlo.Value = opts.detectGlo;
+        fh.gloDur.Value = num2str(opts.gloDur);
+
         fh.ignoreTau.Value = opts.ignoreTau;
+        fh.propMetric.Value = opts.propMetric;
+        fh.networkFeatures.Value = opts.networkFeatures;
         
         n = round(fh.sldMov.Value);
-        ui.mov.updtMovInfo(f,n,opts.sz(3));
+        ui.mov.updtMovInfo(f,n,opts.sz(4));
     end
 end

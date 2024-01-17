@@ -1,11 +1,16 @@
-function riseT = getRisingTime(x0,t0,t1,thrVec)
+function riseT = getRisingTime(x0,t0,t1,occupy,thrVec)
     [maxV,tMax] = max(x0(t0:t1));
     tMax = tMax + t0 - 1;   
     
     [~,tMin] = min(x0(t0:tMax));
     t0 = t0 + tMin - 1;
     % extenstion
-    t0 = max(t0 - 10,1);
+    tPre = find(occupy(1:t0),1,'last') + 1;
+    if isempty(tPre)
+        tPre = 1;
+    end
+    t0 = max(t0 - 10,tPre);
+
     [minV,tMin] = min(x0(t0:tMax));
     tMin = tMin + t0 - 1;
     

@@ -1,100 +1,107 @@
 function addCon_wkfl(f,pWkfl)
     
     % workflow panels ----
-    bWkfl = uix.VBox('Parent',pWkfl,'Tag','bWkfl','Spacing',10);
-    pDraw = uix.BoxPanel('Parent',bWkfl,'Title','Direction, regions, landmarks','Tag','pDraw');
-    pDeOut = uix.BoxPanel('Parent',bWkfl,'Title','Detection pipeline','Tag','pDeOut');
-    pFilter = uix.BoxPanel('Parent',bWkfl,'Title','Proof reading','Tag','pFilter');
-    pExport = uix.BoxPanel('Parent',bWkfl,'Title','Export','Tag','pExport');
-    pSys = uix.BoxPanel('Parent',bWkfl,'Title','Others','Tag','pSys');
-    uix.Empty('Parent',bWkfl);
-    bWkfl.Heights = [110,350,190,100,60,-1];
+    bWkfl = uigridlayout(pWkfl,'Tag','bWkfl','Padding',[0,0,0,0],'ColumnWidth',{'1x'},'RowHeight',{100,340,228,100,52,'1x'},'RowSpacing',5);
+    pDraw = uipanel(bWkfl,'Tag','pDraw');
+    pDeOut = uipanel(bWkfl,'Tag','pDeOut');
+    pFilter = uipanel(bWkfl,'Tag','pFilter');
+    pExport = uipanel(bWkfl,'Tag','pExport');
+    pSys = uipanel('Parent',bWkfl,'Tag','pSys');
     
     % draw regions ----
-    bDraw = uix.VBox('Parent',pDraw,'Spacing',3,'Padding',3);
-    gDraw = uix.Grid('Parent',bDraw,'Spacing',3,'Padding',3);
-    uicontrol(gDraw,'Style','text','String','Cell boundary','HorizontalAlignment','left');
-    uicontrol(gDraw,'Style','text','String','Landmark(soma)','HorizontalAlignment','left');
-    uicontrol(gDraw,'String','+','Tag','AddCell','Callback',...
+    bDraw = uigridlayout(pDraw,'Padding',[0,5,0,0],'ColumnWidth',{'1x'},'RowHeight',{20,'1x',20},'ColumnSpacing',0,'RowSpacing',5);
+    uilabel(bDraw,'Text','Direction, regions, landmarks','BackgroundColor',[0 0.3 0.6],'FontColor','white');
+    gDraw = uigridlayout(bDraw,'Tag','drawRegButtons','Padding',[0,0,0,0],'ColumnWidth',{'1x',20,20,20,50,40,40},'RowHeight',{'1x','1x'},'ColumnSpacing',0,'RowSpacing',5);
+    uilabel(gDraw,'Text','  Cell boundary');
+    uibutton(gDraw,'push','Text','+','Tag','AddCell','ButtonPushedFcn',...
         {@ui.mov.updtCursorFunMov,f,'add','cell'},'Interruptible','off','BusyAction','cancel');
-    uicontrol(gDraw,'String','+','Tag','AddLm','Callback',...
-        {@ui.mov.updtCursorFunMov,f,'add','landmk'},'Interruptible','off','BusyAction','cancel');
-    uicontrol(gDraw,'String','-','Tag','RmCell',...
-    'Callback',{@ui.mov.updtCursorFunMov,f,'rm','cell'});
-    uicontrol(gDraw,'String','-','Tag','RmLm',...
-    'Callback',{@ui.mov.updtCursorFunMov,f,'rm','landmk'});
-    uicontrol(gDraw,'String','->','Tag','DragCell','Callback',...
+    uibutton(gDraw,'push','Text','-','Tag','RmCell',...
+    'ButtonPushedFcn',{@ui.mov.updtCursorFunMov,f,'rm','cell'});
+    uibutton(gDraw,'push','Text','->','Tag','DragCell','ButtonPushedFcn',...
         {@ui.mov.updtCursorFunMov,f,'drag','cell'},'Interruptible','off','BusyAction','cancel');
-    uicontrol(gDraw,'String','->','Tag','DragLm','Callback',...
+    uibutton(gDraw,'push','Text','Name','Tag','NameCell',...
+    'ButtonPushedFcn',{@ui.mov.updtCursorFunMov,f,'name','cell'});
+    uibutton(gDraw,'push','Text','Save',...
+    'ButtonPushedFcn',{@ui.mov.regionSL,f,'save','cell'});
+    uibutton(gDraw,'push','Text','Load',...
+    'ButtonPushedFcn',{@ui.mov.regionSL,f,'load','cell'});
+    uilabel(gDraw,'Text','  Landmark(soma)');
+    uibutton(gDraw,'push','Text','+','Tag','AddLm','ButtonPushedFcn',...
+        {@ui.mov.updtCursorFunMov,f,'add','landmk'},'Interruptible','off','BusyAction','cancel');
+    uibutton(gDraw,'push','Text','-','Tag','RmLm',...
+    'ButtonPushedFcn',{@ui.mov.updtCursorFunMov,f,'rm','landmk'});
+    uibutton(gDraw,'push','Text','->','Tag','DragLm','ButtonPushedFcn',...
         {@ui.mov.updtCursorFunMov,f,'drag','landmk'},'Interruptible','off','BusyAction','cancel');
-    uicontrol(gDraw,'String','Name','Tag','NameCell',...
-    'Callback',{@ui.mov.updtCursorFunMov,f,'name','cell'});
-    uicontrol(gDraw,'String','Name','Tag','NameLm',...
-    'Callback',{@ui.mov.updtCursorFunMov,f,'name','landmk'});
-    uicontrol(gDraw,'String','Save',...
-    'Callback',{@ui.mov.regionSL,f,'save','cell'});
-    uicontrol(gDraw,'String','Save',...
-    'Callback',{@ui.mov.regionSL,f,'save','landmk'});
-    uicontrol(gDraw,'String','Load',...
-    'Callback',{@ui.mov.regionSL,f,'load','cell'});
-    uicontrol(gDraw,'String','Load',...
-    'Callback',{@ui.mov.regionSL,f,'load','landmk'});
-    gDraw.Widths = [-1,20,20,20,50,40,40];
-    gDraw.Heights = [20,20];
-    bDrawBt = uix.HButtonBox('Parent',bDraw,'Spacing',10,'ButtonSize',[120,20]);
-    uicontrol(bDrawBt,'String','Draw anterior','Tag','drawNorth','Callback',...
+    uibutton(gDraw,'push','Text','Name','Tag','NameLm',...
+    'ButtonPushedFcn',{@ui.mov.updtCursorFunMov,f,'name','landmk'});
+    uibutton(gDraw,'push','Text','Save',...
+    'ButtonPushedFcn',{@ui.mov.regionSL,f,'save','landmk'});
+    uibutton(gDraw,'push','Text','Load',...
+    'ButtonPushedFcn',{@ui.mov.regionSL,f,'load','landmk'});
+
+    bDrawBt = uigridlayout(bDraw,'Padding',[5,0,5,0],'ColumnWidth',{'fit','fit','fit'},'RowHeight',{'1x'},'ColumnSpacing',10,'RowSpacing',5);
+    uibutton(bDrawBt,'push','Text','Draw anterior','Tag','drawNorth','ButtonPushedFcn',...
         {@ui.mov.drawReg,f,'arrow','diNorth'},'Interruptible','off','BusyAction','cancel');
-    uicontrol(bDrawBt,'String','Mask builder',...
-        'Callback',{@ui.msk.mskBuilderOpen,f},'Enable','on');
-    uicontrol(bDrawBt,'String','Update features','Tag','updtFeature1',...
-        'Callback',{@ui.detect.updtFeature,f,0},'Enable','off');
-    uicontrol(bDrawBt,'String','Extract ROI','Tag','extract','Callback',...
-        {@ui.mov.updtCursorFunMov,f,'extract','cell'},'Interruptible','off','BusyAction','cancel');
-    uix.Empty('Parent',bDraw);
-    bDraw.Heights = [-1,20,5];
+    uibutton(bDrawBt,'push','Text','Mask builder',...
+        'ButtonPushedFcn',{@ui.msk.mskBuilderOpen,f},'Enable','on');
+    uibutton(bDrawBt,'state','Text','Check ROI curve','Tag','checkROI',...
+        'ValueChangedFcn',{@ui.mov.updtCursorFunMov,f,'check','roi'},'Enable','on');
+%     uibutton(bDrawBt,'push','Text','Extract ROI','Tag','extract','ButtonPushedFcn',...
+%         {@ui.mov.updtCursorFunMov,f,'extract','cell'},'Interruptible','off','BusyAction','cancel');
     
     % event detection top ----
     ui.com.addDetectTab(f,pDeOut);
     
     % filtering ----
-    bFilter = uix.VBox('Parent',pFilter,'Spacing',3,'Padding',3);
-    fcon = uix.HBox('Parent',bFilter,'Spacing',5);
-    uicontrol(fcon,'String','view/favourite','Tag','viewFavClick',...
-        'Callback',{@ui.mov.updtCursorFunMov,f,'addrm','viewFav'});
-    uicontrol(fcon,'String','delete/restore','Tag','delResClick',...
-        'Callback',{@ui.mov.updtCursorFunMov,f,'addrm','delRes'});
-    uitable(bFilter,'Data',zeros(5,4),'Tag','filterTable',...
-        'CellEditCallback',{@ui.detect.filterUpdt,f});
-    fcon2 = uix.HBox('Parent',bFilter,'Spacing',5);
-    uicontrol(fcon2,'String','addAllFiltered','Tag','addAllFiltered',...
-        'Callback',{@ui.mov.updtCursorFunMov,f,'addrm','addAll'});
-    uicontrol(fcon2,'String','FeaturesPlot','Tag','featuresPlot',...
-        'Callback',{@ui.mov.featurePlot,f});
-    bFilter.Heights = [20,-1,20];
-    
+    bFilter = uigridlayout(pFilter,'Padding',[0,5,0,0],'ColumnWidth',{5,'1x','1x',5},'RowHeight',{20,20,'1x',20},'RowSpacing',5);
+    p = uilabel(bFilter,'Text','Proof reading','BackgroundColor',[0 0.3 0.6],'FontColor','white');
+    p.Layout.Column = [1,4];
+    p = uibutton(bFilter,'state','Text','view/favourite','Tag','viewFavClick',...
+        'ValueChangedFcn',{@ui.mov.updtCursorFunMov,f,'addrm','viewFav'});
+    p.Layout.Column = 2;
+    p = uibutton(bFilter,'state','Text','delete/restore','Tag','delResClick',...
+        'ValueChangedFcn',{@ui.mov.updtCursorFunMov,f,'addrm','delRes'});
+    p.Layout.Column = 3;
+    p = uitable(bFilter,'Data',zeros(5,4),'Tag','filterTable',...
+        'CellEditCallback',{@ui.detect.filterUpdt,f},'RowName',[],...
+        'ColumnWidth',{20 125 75 75},'ColumnName',{'','Feature','Min','Max'},...
+        'FontSize',12,'ColumnEditable',[true,false,true,true]);
+    p.Layout.Column = [1,4];p.Layout.Row = 3;
+    p = uibutton(bFilter,'push','Text','addAllFiltered','Tag','addAllFiltered',...
+        'ButtonPushedFcn',{@ui.mov.updtCursorFunMov,f,'addrm','addAll'});
+    p.Layout.Column = 2;p.Layout.Row = 4;
+    p = uibutton(bFilter,'push','Text','FeaturesPlot','Tag','featuresPlot',...
+        'ButtonPushedFcn',{@ui.mov.featurePlot,f});
+    p.Layout.Column = 3;
+
+    % Select Button
+    gSelect = uigridlayout(bFilter,'Tag','sliceSelect','Padding',[10,0,10,0],'ColumnWidth',{'1x'},'RowHeight',{'1x','1x','1x','1x','1x','1x',20},'RowSpacing',3);
+    gSelect.Layout.Column = [1,4];gSelect.Layout.Row = 3;
+    uilabel(gSelect,'Text','  X Location');
+    uislider(gSelect,'Tag','xPos','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.mov.sliceMov3D,f});
+    uilabel(gSelect,'Text','  Y Location');
+    uislider(gSelect,'Tag','yPos','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.mov.sliceMov3D,f});
+    uilabel(gSelect,'Text','  Z Location');
+    uislider(gSelect,'Tag','zPos','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.mov.sliceMov3D,f});
+    bSelectBt = uigridlayout(gSelect,'Padding',[80,0,80,0],'ColumnWidth',{'1x',},'RowHeight',{'1x'},'RowSpacing',5,'ColumnSpacing',5);
+    uibutton(bSelectBt,'push','Text','Select','Tag','select3D','ButtonPushedFcn',{@ui.mov.select3D,f});
+    gSelect.Visible = 'off';
+
     % exporting ----
-    bExp = uix.VBox('Parent',pExport,'Spacing',5,'Padding',5);
-    
-    EvtFt = uix.HBox('Parent',bExp,'Spacing',5);
-    EvtFt2 = uix.HBox('Parent',bExp,'Spacing',5);
-    % uicontrol(bExp,'Style','checkbox','String','Filtered events','Value',1,'Tag','expEvtFlt');
-    % uicontrol(bExp,'Style','checkbox','String','Selected events','Value',1,'Tag','expEvtMngr');
-    uicontrol(EvtFt,'Style','checkbox','String','Events','Value',1,'Tag','expEvt');
-    uicontrol(EvtFt,'Style','checkbox','String','Feature Table','Value',1,'Tag','expFt');
-    % uicontrol(bExp,'Style','checkbox','String','Tables and maps','Value',1,'Tag','expTab');
-    uicontrol(EvtFt2,'Style','checkbox','String','Movie with overlay','Value',1,'Tag','expMov');
-    uicontrol(EvtFt2,'Style','checkbox','String','Events (small)','Value',0,'Tag','expEvt2');
-    % uicontrol(bExp,'Style','checkbox','String','Features','Tag','expFea');
-    % uicontrol(bExp,'Style','checkbox','String','Curves','Tag','expCur');
-    bExpBtn = uix.HButtonBox('Parent',bExp,'Spacing',20);
-    uicontrol(bExpBtn,'String','Export / Save','Callback',{@ui.proj.getOutputFolder,f});
-    bExpBtn.ButtonSize = [120,20];
+    bExp = uigridlayout(pExport,'Padding',[0,5,0,0],'ColumnWidth',{5,'1x','1x',5},'RowHeight',{20,20,20,20},'RowSpacing',5);
+    p = uilabel(bExp,'Text','Export','BackgroundColor',[0 0.3 0.6],'FontColor','white'); p.Layout.Column = [1,4];
+    p = uicheckbox(bExp,'Text','AQuA project','Value',1,'Tag','expEvt');p.Layout.Column = 2;
+    uicheckbox(bExp,'Text','Feature Table','Value',1,'Tag','expFt');
+    p = uicheckbox(bExp,'Text','Movie with overlay','Value',1,'Tag','expMov');p.Layout.Column = 2; p.Layout.Row = 3;
+    % uicheckbox(bExp,'Text','Events (Only position)','Value',0,'Tag','expEvt2');
+    p = uibutton(bExp,'push','Text','Export / Save','ButtonPushedFcn',{@ui.proj.getOutputFolder,f});
+    p.Layout.Column = [2,3]; p.Layout.Row = 4;
     
     % misc. tools ----
-    bSys = uix.HButtonBox('Parent',pSys,'Spacing',15,'Padding',5);
-    uicontrol(bSys,'String','Restart','Callback',{@ui.proj.back2welcome,f});
-    uicontrol(bSys,'String','Send to workspace','Callback',{@ui.proj.exportVar2Base,f});
-    bSys.ButtonSize = [140,20];
+    bSys = uigridlayout(pSys,'Padding',[0,5,0,0],'ColumnWidth',{5,'1x','1x',5},'RowHeight',{20,20},'RowSpacing',5);
+    p = uilabel(bSys,'Text','Others','BackgroundColor',[0 0.3 0.6],'FontColor','white');p.Layout.Column = [1,4];
+    p = uibutton(bSys,'push','Text','Restart','ButtonPushedFcn',{@ui.proj.back2welcome,f});p.Layout.Column = 2;
+    uibutton(bSys,'push','Text','Send to workspace','ButtonPushedFcn',{@ui.proj.exportVar2Base,f});
 end
 
 

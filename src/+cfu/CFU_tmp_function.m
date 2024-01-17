@@ -1,8 +1,9 @@
-function [cfu_pre] = CFU_tmp_function(evts,sz,ff)
+function [cfu_pre] = CFU_tmp_function(evts,spaOption,sz,ff)
     H = sz(1);
     W = sz(2);
-    T = sz(3);
-    evtMap = zeros([H,W,T],'uint16');
+    L = sz(3);
+    T = sz(4);
+    evtMap = zeros([H,W,L,T],'uint16');
     for i = 1:numel(evts)
        evtMap(evts{i}) = i;
     end
@@ -14,10 +15,14 @@ function [cfu_pre] = CFU_tmp_function(evts,sz,ff)
     weightedIhw = cell(nNode,1);
     maxCounts = zeros(nNode,1);
     parfor i = 1:numel(evtIhw)
-       [ih,iw,it]  = ind2sub([H,W,T],evts{i});
-       [count,ihw] = groupcounts(sub2ind([H,W],ih,iw));
+       [ih,iw,il,it]  = ind2sub([H,W,L,T],evts{i});
+       [count,ihw] = groupcounts(sub2ind([H,W,L],ih,iw,il));
        evtIhw{i} = ihw;
-       weightedIhw{i} = count/max(count);
+       if spaOption
+            weightedIhw{i} = count/max(count);
+       else
+            weightedIhw{i} = ones(numel(ihw),1);
+       end
        maxCounts(i) = max(count);
     end
     nNode = numel(evts);
@@ -28,7 +33,9 @@ function [cfu_pre] = CFU_tmp_function(evts,sz,ff)
     nPair = 0;
     tic;
     for i = 1:nNode
-        waitbar(0.2 + i/nNode*0.8,ff);
+        if exist('ff','var')&&~isempty(ff)
+            waitbar(0.2 + i/nNode*0.8,ff);
+        end
         label1 = i;
         ihw1 = evtIhw{i};
         weightedIhw1 = weightedIhw{i};

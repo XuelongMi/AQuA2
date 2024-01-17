@@ -6,16 +6,27 @@ end
 
 fh = guidata(f);
 scl = getappdata(f,'scl');
+opts = getappdata(f,'opts');
 scl.min = fh.sldMin.Value;
 scl.max = fh.sldMax.Value;
 scl.bri1 = fh.sldBri1.Value;
-scl.bri2 = fh.sldBri2.Value;
+if ~opts.singleChannel
+    scl.bri2 = fh.sldBri2.Value;
+end
 scl.briL = fh.sldBriL.Value;
 scl.briR = fh.sldBriR.Value;
-scl.minOv = fh.sldMinOv.Value;
-scl.maxOv = fh.sldMaxOv.Value;
 scl.briOv = fh.sldBriOv.Value;
 setappdata(f,'scl',scl);
+
+
+if opts.sz(3) > 1
+    movs = {'im1','im2a','im2b'};
+    brights = [scl.bri1, scl.briL, scl.briR];
+    for i = 1:3
+        fh.ims.(movs{i}).Colormap = max(min(gray(256)*brights(i),1),0);
+        pause(1e-4);
+    end
+end
 
 % use current overlay colormap
 % do not include rising time map
@@ -34,10 +45,9 @@ if updtOv
         gap1 = (max(v1)-min(v1))/99;
         m1 = min(v1):gap1:max(v1);
         cMap0 = ui.over.reMapCol(btSt.mapNow,m1,scl);        
-        if btSt.sbs==0
+        if ~fh.sbs.Value
             ui.over.updtColMap(fh.movColMap,m1,cMap0,1);
-        end
-        if btSt.sbs==1
+        else
             viewName = {'leftView','rightView'};
             axLst = {fh.movLColMap,fh.movRColMap};
             for ii=1:2

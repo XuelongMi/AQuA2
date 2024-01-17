@@ -19,7 +19,7 @@ function [seLst,seLabel,mergingInfo] = mergingSEbyInfo(evtLst,majorityEvt,mergin
     
     for iReg = 1:numel(CC)
         labelsInActReg = mergingInfo.labelsInActRegs{iReg};
-        delayMatrix = [];
+        
         %% forbidden pairs
         for i = 1:numel(labelsInActReg)
             curLabel = labelsInActReg(i);     
@@ -48,6 +48,8 @@ function [seLst,seLabel,mergingInfo] = mergingSEbyInfo(evtLst,majorityEvt,mergin
         end
         
         %% delays
+        delayMatrix = zeros(numel(labelsInActReg)*numel(labelsInActReg),3);
+        nPair = 0;
         for i = 1:numel(labelsInActReg)
             curLabel = labelsInActReg(i);     
             neib0 = neibLst{curLabel};
@@ -56,8 +58,8 @@ function [seLst,seLabel,mergingInfo] = mergingSEbyInfo(evtLst,majorityEvt,mergin
             ex0 = ex0(ex0>curLabel);
             neib0 = setdiff(neib0,ex0); % the neighbors need to calculate delay
             
-            curMajIhw =  majorityEvt{curLabel}.ihw;
-            curdelays = majorityEvt{curLabel}.delays;
+%             curMajIhw =  majorityEvt{curLabel}.ihw;
+%             curdelays = majorityEvt{curLabel}.delays;
             for j = 1:numel(neib0)
                 nLabel = neib0(j);                 
                 if(isKey(delayDif{curLabel},nLabel))
@@ -89,21 +91,18 @@ function [seLst,seLabel,mergingInfo] = mergingSEbyInfo(evtLst,majorityEvt,mergin
                 end
                 
                 %% ratio
-                nTW1 = numel(majorityEvt{curLabel}.TW);
-                nTW2 = numel(majorityEvt{nLabel}.TW); 
-                timeDelay = timeDelay/min(nTW1,nTW2);
-                newDelay = [double(curLabel),double(nLabel),timeDelay];
-                delayMatrix = [delayMatrix;newDelay];
+                nPair = nPair + 1;
+                delayMatrix(nPair,:) = [double(curLabel),double(nLabel),timeDelay];
             end
         end
-            
+        delayMatrix = delayMatrix(1:nPair,:);
         if(isempty(delayMatrix))
             continue;
         end
         
         %% merging
         maxDelay  = opts.maxDelay;
-        delayMatrix = delayMatrix(delayMatrix(:,3)<maxDelay,:);
+        delayMatrix = delayMatrix(delayMatrix(:,3)<=maxDelay,:);
         
         [~,id] = sort(delayMatrix(:,3));
         delayMatrix = delayMatrix(id,:);

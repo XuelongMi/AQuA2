@@ -1,14 +1,13 @@
 function aqua_gui(res,dbg)
     %AQUA_GUI GUI for AQUA
-    
+    warning('off','all')
     startup;
-    load('random_Seed');
-    rng(s);
+
     if ~exist('dbg','var')
         dbg = 0;
     end
     
-    f = figure('Name','AQUA2','MenuBar','none','Toolbar','none',...
+    f = uifigure('Name','AQUA2','MenuBar','none','Toolbar','none',...
         'NumberTitle','off','Visible','off');
     
     ui.com.addCon(f,dbg);

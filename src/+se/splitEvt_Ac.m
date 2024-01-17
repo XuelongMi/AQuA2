@@ -1,54 +1,49 @@
-function [evt2Lst,major] = splitEvt_Ac(dF,dFOrg,evtLst,major,dFSmoVec,opts,Ttestopen)
+function [evt2Lst,major,sdLst] = splitEvt_Ac(dF,datOrg,evtLst,sdLst,major,opts)
 
-    [H,W,T] = size(dFOrg);
-    opts.sigThr = opts.sigThr-0.5;
-    opts.ratio = 0.05;
+    [H,W,L,T] = size(datOrg);
+    step = 0.05;
+
     %% get Majority
     N = numel(major);    
     trivial = false(N,1);
-    gap = opts.smoT*2+1;
+
     %% Split
-    Map = zeros(H,W,T,'uint16');
+    Map = zeros(H,W,L,T,'uint16');
     for i = 1:numel(evtLst)
        Map(evtLst{i})  = i;
     end
 
-    dFVec = reshape(dFOrg,[],T);
+    datVecOrg = reshape(datOrg,[],T);
     clear dFOrg;
-%     dFSmoVec = reshape(imgaussfilt(dFOrg,4),[],T);
+    dFVec = reshape(dF,[],T);
+    clear dF;
     Map = reshape(Map,[],T);
     evtVecLst = label2idx(Map);
     nEvt = N;
     minDur = opts.minDur;
 
-    sourceEvt = zeros(N,1);
+    sourceEvt = 1:N;
     for i = 1:N
        pix = evtVecLst{i} ;
-       [~,it] = ind2sub([H*W,T],pix);
+       [~,~,~,it00] = ind2sub([H,W,L,T],pix);
        ihw = major{i}.ihw;
-       curve = mean(dFVec(major{i}.ihw,:),1);
-       s0 = sqrt(median((curve(gap+1:end)-curve(1:end-gap)).^2)/0.9133);
-       curve = curve/s0;    % curve = curve*sqrt(numel(ihw));
+       curve = mean(datVecOrg(major{i}.ihw,:),1);
+       s0 = pre.avgDatNoiseEst(curve,ihw,opts);
+       curve = curve/s0;
        curveSmo = imgaussfilt(curve,2);
-       major{i}.TW = se.getMajorityTem(curveSmo,major{i}.TW,pix,[H,W,T]);
-       t00 = min(it);
-       t11 = max(it);
-       curve00 = mean(dFVec(major{i}.ihw,:),1); curve00 = curve00(major{i}.TW);
-%         curve00 = curve00 - ([0:numel(curve00)-1]/numel(curve00)*(curve00(end)-curve00(1))+curve00(1));
-        curve00 = curve00 - min(curve00);
-        curve00 = curve00/max(curve00);
-        major{i}.curve = curve00;
-       
+       t00 = min(it00);
+       t11 = max(it00);
+
        % initialization
-       thrs = floor(max(curveSmo(t00:t11))):-opts.ratio:floor(min(curveSmo(t00:t11)));
+       thrs = max(curveSmo(t00:t11)):-step:min(curveSmo(t00:t11));
        labels = true(T,1);
        labels(t00:t11) = false;
        TWcandidate = cell(0);
-       cnt = 0;
-       %% check peak
+       cnt = 0;     % peak number
+
+       %% check significant peak
        for k = 1:numel(thrs)
            thr = thrs(k);
-          
            curTWs = bwconncomp(curveSmo(t00:t11)>thr);
            curTWs = curTWs.PixelIdxList;
            sz = cellfun(@numel,curTWs);
@@ -65,42 +60,29 @@ function [evt2Lst,major] = splitEvt_Ac(dF,dFOrg,evtLst,major,dFSmoVec,opts,Ttest
                    continue;
                end
                
-               % whether detected
+               % whether already detected
                if(~isempty(find(labels(t0:t1),1)))
                   continue; 
                end
                fg = curve(TW);
                [bg1,bg2,nv1,nv2] = se.findNeighbor(curve,t0,t1,T,thr,curveSmo);
                [Tscore1,Tscore2] = se.calTScore(fg,bg1,bg2);
-               if(Ttestopen && (Tscore1<=opts.sigThr || Tscore2<=opts.sigThr)) % T-test check
+               if(Tscore1<=opts.sigThr || Tscore2<=opts.sigThr) % T-test check, fail
                   continue; 
                end
                [score1,score2] = se.calOrderScore(fg,bg1,bg2,nv1,nv2);           
-%                    figure;plot(curve);hold on;plot(TW,curve(TW),'r')
-                if(min(score1,score2)>opts.sigThr)    % Update
+               if(min(score1,score2)>opts.sigThr)    % Update
                     cnt = cnt + 1;
                     TWcandidate{cnt} = t0:t1;
                     labels(TW) = true;
-                end
+               end
            end
        end
 
-       if(numel(TWcandidate)==0)
+       if(numel(TWcandidate)<=1)    % from average curve, no multiple significant peaks. No need to segment.
           continue; 
        end
-       
-       maxSignal = max(curveSmo)-min(curveSmo);
-       
-       if(numel(TWcandidate)==1)
-           major{i}.TW = se.getMajorityTem(curveSmo,TWcandidate{1},pix,[H,W,T]);
-           curve00 = mean(dFVec(major{i}.ihw,:),1); curve00 = curve00(major{i}.TW);
-%            curve00 = curve00 - ([0:numel(curve00)-1]/numel(curve00)*(curve00(end)-curve00(1))+curve00(1));
-           curve00 = curve00 - min(curve00);
-           curve00 = curve00/max(curve00);
-           major{i}.curve = curve00;
-           continue;
-       end
-       
+              
         % find splitting margin
         tStart = cellfun(@(x)x(1),TWcandidate);
         [~,id] = sort(tStart);
@@ -114,17 +96,15 @@ function [evt2Lst,major] = splitEvt_Ac(dF,dFOrg,evtLst,major,dFSmoVec,opts,Ttest
             GapPoint = [GapPoint;tGap];
         end
 
-       % Extend
-       seedTW = major{i}.TW;
-       GapPoint = [t00;GapPoint;t11];
-       validGap = true(numel(GapPoint),1);
-       validPeak = true(numel(GapPoint)-1,1);
-       % check
-       for k = 1:(numel(GapPoint)-1)
+        % Extend each interval, check whether they are valid
+        seedTW = major{i}.TW;
+        GapPoint = [t00-1;GapPoint;t11];
+        validGap = true(numel(GapPoint),1);
+        validPeak = true(numel(GapPoint)-1,1);
+        % check
+        for k = 1:(numel(GapPoint)-1)
             TW = (GapPoint(k)+1):GapPoint(k+1);
-            if(k==1)
-                TW = [t00,TW];
-            end
+
             %% check whether significant
             t0 = min(TW);
             t1 = max(TW);
@@ -133,7 +113,7 @@ function [evt2Lst,major] = splitEvt_Ac(dF,dFOrg,evtLst,major,dFSmoVec,opts,Ttest
             [minVLeft] = min(curveSmo(t0:tPeak));
             [minVRight] = min(curveSmo(tPeak:t1));
             minV = max(minVLeft,minVRight);
-            if(maxV-minV<max(3,0.05*maxSignal))
+            if(maxV-minV<3)
                 validPeak(k) = false;
                 if(k+1 == numel(GapPoint))
                     t = k;
@@ -149,91 +129,118 @@ function [evt2Lst,major] = splitEvt_Ac(dF,dFOrg,evtLst,major,dFSmoVec,opts,Ttest
        TWcandidate = TWcandidate(validPeak);
        GapPoint = GapPoint(validGap);
        
-       %
-       if(numel(TWcandidate)==0)
-          continue; 
-       elseif(numel(TWcandidate)==1)
-            curTW = TWcandidate{1};
-            t0 = curTW(1);   % update time window
-            t1 = curTW(end);
-            major{i}.TW = se.getMajorityTem(curveSmo,t0:t1,pix,[H,W,T]);
-            curve00 = mean(dFVec(major{i}.ihw,:),1); curve00 = curve00(major{i}.TW);
-%             curve00 = curve00 - ([0:numel(curve00)-1]/numel(curve00)*(curve00(end)-curve00(1))+curve00(1));
-            curve00 = curve00 - min(curve00);
-            curve00 = curve00/max(curve00(:));
-            major{i}.curve = curve00;
+       % from average curve, no multiple significant peaks. No need to segment.
+       if(numel(TWcandidate)<=1)
             continue;
        end
 
-%        szT = zeros(numel(TWcandidate),1);
-%        for k = 1:numel(TWcandidate)
-%             szT(k) = numel(intersect(TWcandidate{k},seedTW));
-%        end
        szT = cellfun(@(x)numel(intersect(x,seedTW)),TWcandidate);
        [~,id] = max(szT);
-       
+       flag = true;
        for k = 1:numel(TWcandidate)            
-           select = it>=GapPoint(k)&it<=GapPoint(k+1);
-           pix2 = pix(select);
-           t0 = TWcandidate{k}(1);   % update time window
-           t1 = TWcandidate{k}(end);
-           %% majorPeak
-           if(k==id)
-                major{i}.TW = se.getMajorityTem(curveSmo,t0:t1,pix2,[H,W,T]);
-                Map(pix2) = i;
-                major{i}.needUpdatePeak = true;
-                curve00 = mean(dFVec(major{i}.ihw,:),1); curve00 = curve00(major{i}.TW);
-%                 curve00 = curve00 - ([0:numel(curve00)-1]/numel(curve00)*(curve00(end)-curve00(1))+curve00(1));
-                curve00 = curve00 - min(curve00);
-                curve00 = curve00/max(curve00(:));
-                major{i}.curve = curve00;
-           else
-               [mIhw,TW,delays] = se.getRefineSpaMajority_Ac(ihw,dFSmoVec,[H,W,T],pix2,t0:t1,opts,false);
-               % check trivial
-                n0 = numel(intersect(ihw,mIhw));
-                n1 = numel(ihw);
-                n2 = numel(mIhw); 
-                nEvt = nEvt+1;  
-                trivial(nEvt) = ~(n0/n1>=opts.overlap & n0/n2>=opts.overlap);
-                sourceEvt(nEvt) = i;
-                major{nEvt}.TW = TW;
-                major{nEvt}.ihw = mIhw;
-                major{nEvt}.delays = delays;
-                major{nEvt}.needUpdatePeak = true;
-%                 major{nEvt}.orgSeed = major{i}.orgSeed;
-                curve00 = mean(dFVec(mIhw,:),1); curve00 = curve00(TW);
-%                 curve00 = curve00 - ([0:numel(curve00)-1]/numel(curve00)*(curve00(end)-curve00(1))+curve00(1));
-                curve00 = curve00 - min(curve00);
-                curve00 = curve00/max(curve00(:));
-                major{nEvt}.curve = curve00;
-                Map(pix2) = nEvt;
+           t0 = GapPoint(k)+1;
+           t1 = GapPoint(k+1);
+           select = it00>=t0 & it00<=t1;
+           ts0 = TWcandidate{k}(1);   % update time window
+           ts1 = TWcandidate{k}(end);
+
+           % such segmentation could make region not connected
+           pix0 = pix(select);  
+           [ih,iw,il,it] = ind2sub([H,W,L,T],pix0);
+           rgh = min(ih):max(ih); H0 = numel(rgh); ih = ih - min(ih) + 1;
+           rgw = min(iw):max(iw); W0 = numel(rgw); iw = iw - min(iw) + 1;
+           rgl = min(il):max(il); L0 = numel(rgl); il = il - min(il) + 1;
+           rgt = min(it):max(it); T0 = numel(rgt); it = it - min(it) + 1;
+           pix1 = sub2ind([H0,W0,L0,T0],ih,iw,il,it);
+           Map0 = false(H0,W0,L0,T0);
+           Map0(pix1) = true;
+           cc = bwconncomp(Map0).PixelIdxList;
+
+           if k==id
+               sz = cellfun(@numel,cc);
+               [~,ord] = sort(sz,'descend');
+               cc = cc(ord);
            end
 
+           for j = 1:numel(cc)
+               [ih0,iw0,il0,it0] = ind2sub([H0,W0,L0,T0],cc{j});
+               ih0 = ih0 + min(rgh) - 1;
+               iw0 = iw0 + min(rgw) - 1;
+               il0 = il0 + min(rgl) - 1;
+               it0 = it0 + min(rgt) - 1;
+               pix2 = sub2ind([H,W,L,T],ih0,iw0,il0,it0);
+
+               %% majorPeak
+               if(k==id && flag)
+                    major{i}.TW = se.getMajorityTem(curve,ts0,ts1,t0,t1);
+                    Map(pix2) = i;
+                    curve00 = mean(datVecOrg(major{i}.ihw,:),1); curve00 = curve00(major{i}.TW);
+                    curve00 = curve00 - min(curve00);
+                    curve00 = curve00/max(curve00(:));
+                    major{i}.curve = curve00;
+                    flag = false;
+               else
+                    newSeedIhw = se.getInitIhwInSplit(curve,dFVec,[H,W,L,T],pix2,ts0,ts1,opts);
+                    nEvt = nEvt+1;  
+                    if isempty(newSeedIhw)
+                        mIhw = [];
+                        TW = t0:t1;
+                        delays = [];
+                    else
+                        [mIhw,TW,delays] = se.seed2Majoirty(newSeedIhw,dFVec,[H,W,L,T],pix2,ts0,ts1,opts);
+                    end
+                   % check trivial
+                    n0 = numel(intersect(ihw,mIhw));
+                    n1 = numel(ihw);
+                    n2 = numel(mIhw); 
+                    
+                    trivial(nEvt) = ~(n0/n1>=opts.overlap & n0/n2>=opts.overlap);
+                    sourceEvt(nEvt) = i;
+                    major{nEvt}.TW = TW;
+                    major{nEvt}.ihw = mIhw;
+                    major{nEvt}.delays = delays;
+                    sdLst{nEvt} = sdLst{i};
+                    curve00 = mean(datVecOrg(mIhw,:),1); curve00 = curve00(TW);
+                    curve00 = curve00 - min(curve00);
+                    curve00 = curve00/max(curve00(:));
+                    major{nEvt}.curve = curve00;
+                    Map(pix2) = nEvt;
+               end
+           end
        end 
     end
     
-    Map = reshape(Map,[H,W,T]);
+    Map = reshape(Map,[H,W,L,T]);
     evt2Lst = label2idx(Map);
-    dh = [-1 0 1 -1 1 -1 0 1];
-    dw = [-1 -1 -1 0 0 1 1 1];
+    for i = 1:nEvt
+        curSdPix = intersect(sdLst{i},evt2Lst{i});
+        if isempty(curSdPix)
+            curSdPix = evt2Lst{i};
+        end
+        sdLst{i} = curSdPix;
+    end
+
+
+    [dh,dw,dl] = se.dirGenerate(26); 
+    [x_dir,y_dir,z_dir,t_dir] = se.dirGenerate(80); 
     % trivial should be merged before merging step
     % to avoid wrong forbidden pair
     % And from principle, it should have large overlap with its source
     for i = (N+1):nEvt
        if(trivial(i))    % is trivial event
             pix = evt2Lst{i};
-            [ih,iw,it] = ind2sub([H,W,T],pix);
+            [ih,iw,il,it] = ind2sub([H,W,L,T],pix);
             curTW = major{i}.TW;
             neib0 = [];
             % Find neighbors
             for ii=1:numel(dh)
                 ih1 = min(max(ih + dh(ii),1),H);
                 iw1 = min(max(iw + dw(ii),1),W);
-                vox1 = sub2ind([H,W,T],ih1,iw1,it);
+                il1 = min(max(il + dl(ii),1),L);
+                vox1 = sub2ind([H,W,L,T],ih1,iw1,il,it);
                 idxSel = setdiff(Map(vox1),[0,i]);
                 neib0 = union(neib0,idxSel);
             end
-%             neib0 = setdiff(neib0,[0,i]);
             neib0 = neib0(neib0<=N);
             
             mergedLabel = [];
@@ -251,41 +258,46 @@ function [evt2Lst,major] = splitEvt_Ac(dF,dFOrg,evtLst,major,dFSmoVec,opts,Ttest
             end
             
             if(~isempty(mergedLabel))
-%                 label = mergedLabel;
                 Map(pix) = mergedLabel;
                 evt2Lst{i} = [];
                 evt2Lst{mergedLabel} = [evt2Lst{mergedLabel};pix];
                 % Update
-                [mIhw,TW,delays] = se.getRefineSpaMajority_Ac(major{mergedLabel}.ihw,dFSmoVec,[H,W,T],evt2Lst{mergedLabel},major{mergedLabel}.TW,opts,true,major{mergedLabel}.delays);
+                [mIhw,TW,delays] = se.seed2Majoirty(major{mergedLabel}.ihw,dFVec,[H,W,L,T],evt2Lst{mergedLabel},major{mergedLabel}.TW(1),major{mergedLabel}.TW(end),opts);
                 major{mergedLabel}.TW = TW;
                 major{mergedLabel}.ihw = mIhw;
                 major{mergedLabel}.delays = delays;
-                curve00 = mean(dFVec(mIhw,:),1); curve00 = curve00(TW);
-%                 curve00 = curve00 - ([0:numel(curve00)-1]/numel(curve00)*(curve00(end)-curve00(1))+curve00(1));
+                curve00 = mean(datVecOrg(mIhw,:),1); curve00 = curve00(TW);
                 curve00 = curve00 - min(curve00);
                 curve00 = curve00/max(curve00(:));
                 major{mergedLabel}.curve = curve00;
-            else    % no neighbor
-                trivial(i) = false;
-                if(numel(major{i}.ihw) < opts.minSize)
-                    major{i}.ihw = se.getMajoritySpa(pix,curTW,[H,W,T],opts);
-                    if(numel(major{i}.ihw) < opts.minSize)
-                        trivial(i) = true;  % Still small
-                        OrgLabel = sourceEvt(i);
-                        evt2Lst{OrgLabel} = [evt2Lst{OrgLabel};pix];
+            else    % no neighbor with overlapped time window
+                if numel(major{i}.ihw) < opts.minSize
+                    % too small. pick one region to merge
+                    candidate = [];
+                    for k = 1:numel(x_dir)
+                        ih1 = max(1,min(H,ih+x_dir(k)));
+                        iw1 = max(1,min(W,iw+y_dir(k)));
+                        il1 = max(1,min(L,il+z_dir(k)));
+                        it1 = max(1,min(T,it+t_dir(k)));
+                        pixCur = sub2ind([H,W,L,T],ih1,iw1,il1,it1);
+                        candidate = setdiff(Map(pixCur),[0,i]);
+                        if ~isempty(candidate)
+                            break;
+                        end
                     end
-                    major{i}.delays = zeros(numel(major{i}.ihw),1);
-                    curve00 = mean(dFVec(mIhw,:),1); curve00 = curve00(major{i}.TW);
-%                     curve00 = curve00 - ([0:numel(curve00)-1]/numel(curve00)*(curve00(end)-curve00(1))+curve00(1));
-                    curve00 = curve00 - min(curve00);
-                    curve00 = curve00/max(curve00(:));
-                    major{i}.curve = curve00;
+                    if isempty(candidate)
+                        continue;
+                    end
+                    evt2Lst{candidate(1)} = [evt2Lst{candidate(1)};pix];
+                    Map(pix) = candidate(1);
+                else
+                    trivial(i) = false;
                 end
             end
        end
     end
     
-    
     major = major(~trivial);
     evt2Lst = evt2Lst(~trivial);
+    sdLst = sdLst(~trivial);
 end

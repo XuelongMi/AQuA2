@@ -111,7 +111,7 @@ if strcmp(lbl,'viewFav')
         lst1 = btSt.evtMngrMsk1;
         lst2 = btSt.evtMngrMsk2;
         %% channel 1
-        if evtIdx1>0 && btSt.channelSelect~=3
+        if evtIdx1>0
             if isempty(lst1) || sum(lst1==evtIdx1)==0
                 lst1 = union(lst1,evtIdx1);            
                 ui.evt.curveRefresh([],[],f,evtIdx1,[]);  % draw curve
@@ -123,7 +123,7 @@ if strcmp(lbl,'viewFav')
             ui.evt.evtMngrRefresh([],[],f);  
         end
         %% channel 2
-        if evtIdx2>0 && btSt.channelSelect~=2
+        if evtIdx2>0
             if isempty(lst2) || sum(lst2==evtIdx2)==0
                 lst2 = union(lst2,evtIdx2);            
                 ui.evt.curveRefresh([],[],f,[],evtIdx2);  % draw curve
@@ -179,7 +179,7 @@ if strcmp(lbl,'delRes')
         lst1 = btSt.rmLst1;
         lst2 = btSt.rmLst2;
         %% channel 1
-        if evtIdx1>0 && btSt.channelSelect~=3
+        if evtIdx1>0
             if isempty(lst1) || sum(lst1==evtIdx1)==0
                 lst1 = union(lst1,evtIdx1);            
                 ui.evt.curveRefresh([],[],f,evtIdx1,[]);  % draw curve
@@ -189,7 +189,7 @@ if strcmp(lbl,'delRes')
             btSt.rmLst1 = lst1;     
         end
         %% channel 2
-        if evtIdx2>0 && btSt.channelSelect~=2
+        if evtIdx2>0
             if isempty(lst2) || sum(lst2==evtIdx2)==0
                 lst2 = union(lst2,evtIdx2);            
                 ui.evt.curveRefresh([],[],f,[],evtIdx2);  % draw curve

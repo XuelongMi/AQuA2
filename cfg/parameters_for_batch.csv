@@ -1,48 +1,55 @@
 Name,Variable,Type,File1,File2,File3,File4,File5,File6,File7,File8,File9,File10,File11,File12
-Minimum size,minSize,prep,8,16,15,8,8,10,10,10,25,4,16,100
-Spatial smoothing level,smoXY,prep,0.5,1.1,0.5,0.5,1,1,0.6,0.6,2,1,1.5,2
-Active voxels threshold scale,thrARScl,prep,2,1.2,1.75,2,2,0.8,0.6,0.6,2,1,0.8,0.5
-Temporal cut threshold scale,thrTWScl,prep,2,2,2,2,2,2,2,2,2,0.5,1,25
-Seed growing threshold,thrExtZ,prep,1,0.8,1,1,2,0.8,0.6,0.6,1,1,0.8,0.25
-Slowest propgation,cDelay,event,2,2,2,2,2,0,0,0,2,2,2,10
-Rising phase uncertainty,cRise,event,2,2,2,2,2,0,0,0,2,2,2,3
-GTW smoothness term,gtwSmo,event,1,1,1,1,0.3,1,1,1,1,1,1,1
-GTW windows size,maxStp,event,11,11,11,11,11,11,11,11,11,11,11,11
-Z score threshold for events,zThr,post,2,3,2,0,7,6,5,5,5,2,3,2
-Ignore merging step,ignoreMerge,post,1,1,1,1,0,1,1,1,0,1,1,0
-Maximum merging distance,mergeEventDiscon,post,0,0,0,0,10,5,5,5,5,0,1,5
-Minimum merging correlation,mergeEventCorr,post,0,0,0,0,0,-1,-1,-1,-1,0,0,0
-Maximum merging time difference,mergeEventMaxTimeDif,post,2,2,2,2,2,5,5,5,5,2,2,10
+Registration mode,registrateCorrect,preprocessing,1,1,1,1,1,1,1,1,1,1,1,1
+Bleach correction mode,bleachCorrect,preprocessing,1,1,1,1,1,1,1,1,1,1,1,1
+Median filter radius (For salt and pepper noise),medSmo,preprocessing,0,0,0,0,0,0,0,0,0,0,0,0
+Spatial smoothing level,smoXY,preprocessing,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
 ,,,,,,,,,,,,,,
-Remove pixels close to image boundary,regMaskGap,prep,5,20,5,5,5,0,0,0,0,0,5,5
-Poisson noise model,usePG,prep,1,1,1,1,1,1,1,1,1,1,1,1
-Frames per segment,cut,prep,2000,200,200,200,40,10000,10000,10000,10000,200,200,10000
-Baseline window,movAvgWin,prep,25,25,25,25,20,25,25,25,25,25,25,100
-Extend super voxels temporally,extendSV,prep,1,1,1,1,0,1,1,1,1,1,1,1
-Older code for active voxels,legacyModeActRun,prep,1,1,1,1,0,1,1,1,1,1,1,1
-Time window detection range,getTimeWindowExt,prep,50,50,50,50,50,10000,10000,10000,10000,50,50,50
-Pixels for window detection,seedNeib,prep,1,1,1,1,1,5,5,5,5,1,1,1
-Remove seeds,seedRemoveNeib,prep,2,2,2,2,2,5,5,5,5,2,2,2
-Super voxel significance,thrSvSig,prep,4,4,4,4,1,1,1,1,1,0.5,2,4
-Check more time,gapExt,event,5,5,5,5,5,5,5,5,5,5,5,5
-Super events prefer larger,superEventdensityFirst,event,1,1,1,0,1,1,1,1,1,1,1,1
-Area ratio to find seed curve,gtwGapSeedRatio,event,4,4,4,4,4,4,4,4,4,4,4,4
-Area to find seed curve,gtwGapSeedMin,event,5,5,5,5,5,5,5,5,5,5,5,5
-Spatial overlap threshold,cOver,event,0.2,0.2,0.2,0.2,0,0.2,0.2,0.2,0.2,0.2,0.2,0.2
-Event show threshold on raw data,minShow1,post,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.1,0.2,0.2
-GUI event boundary threshold,minShowEvtGUI,post,0,0,0,0.5,0,0,0,0,0,0,0,0
-Ignore decay tau calculation,ignoreTau,post,1,0,1,1,0,0,0,0,0,1,1,0
-Correct baseline trend,correctTrend,post,1,1,1,0,1,1,1,1,1,1,1,1
-Extend event temporally after merging,extendEvtRe,post,0,0,0,0,0,1,1,1,1,0,0,0
-Propagation threshold minimum,propthrmin,post,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2
-Propagation threshold step,propthrstep,post,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1
-Propagation threshold maximum,propthrmax,post,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8
+Active voxels threshold scale,thrARScl,activeregion,3,3,3,3,3,3,3,3,3,3,3,3
+Minimum duration of signal,minDur,activeregion,5,5,5,5,5,5,5,5,5,5,5,5
+Minimum size,minSize,activeregion,20,20,20,20,20,20,20,20,20,20,20,20
+Maximum size,maxSize,activeregion,inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,inf
+Circularity threshold,circularityThr,activeregion,0,0,0,0,0,0,0,0,0,0,0,0
+Allowed distance in the same signal,spaMergeDist,activeregion,0,0,0,0,0,0,0,0,0,0,0,0
 ,,,,,,,,,,,,,,
-Frame rate,frameRate,prep,0.5,0.0887,1,1,1,0.607216459,0.607216459,0.546200428,0.5462,0.5,0.010388552,0.5
-Spatial resolution,spatialRes,prep,0.5,0.2676,1,1,1,0.455659643,0.455659643,0.450629403,0.45063,0.5,0.322200023,0.5
-Estimated noise variance,varEst,prep,0.02,0.0082671,0.02,0.02,0.02,0.001842326,0.001842326,0.001842326,4.98E-08,0.02,0.02,0.02
-Foreground threshold,fgFluo,prep,0,0,0,0,0,0.07007803,0.07007803,0.07007803,0.005624367,0,0,0
-Background threshold,bgFluo,prep,0,0,0,0,0,0,0,0,0,0,0,0
-X cooridante for north vector,northx,prep,0,0,0,0,0,0,0,0,0,0,0,0
-Y cooridante for north vector,northy,prep,1,1,1,1,1,1,1,1,1,1,1,1
-Skip step2 and 3,skipSteps,prep,0,0,0,0,0,0,0,0,0,0,0,1
+Whether need temporal segmentation or not,needTemp,tempSeg,1,1,1,1,1,1,1,1,1,1,1,1
+Seed size ratio compared to region ,seedSzRatio,tempSeg,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01
+Significance Threshold,sigThr,tempSeg,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5
+Delay score for merging,maxDelay,tempSeg,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6,0.6
+Whether signals are too close so that further refine is needed,needRefine,tempSeg,0,0,0,0,0,0,0,0,0,0,0,0
+Whether signals are not large enough so that further growing is needed,needGrow,tempSeg,0,0,0,0,0,0,0,0,0,0,0,0
+,,,,,,,,,,,,,,
+Whether need spatial segmentation or not,needSpa,spaSeg,1,1,1,1,1,1,1,1,1,1,1,1
+Source size relative to super event,sourceSzRatio,spaSeg,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01
+Sensitivity to detect source (Level 1 to 10),sourceSensitivity,spaSeg,8,8,8,8,8,8,8,8,8,8,8,8
+Whether to extend event temporally,whetherExtend,spaSeg,1,1,1,1,1,1,1,1,1,1,1,1
+,,,,,,,,,,,,,,
+Whether detect global signals,detectGlo,glo,0,0,0,0,0,0,0,0,0,0,0,0
+Minimum duration of global signal,gloDur,glo,20,20,20,20,20,20,20,20,20,20,20,20
+,,,,,,,,,,,,,,
+Ignore decay tau calculation,ignoreTau,post,1,1,1,1,1,1,1,1,1,1,1,1
+Propagation metric in different directions (propagation map is already obtained),propMetric,post,0,0,0,0,0,0,0,0,0,0,0,0
+Network features,networkFeatures,post,0,0,0,0,0,0,0,0,0,0,0,0
+,,,,,,,,,,,,,,
+Propagation smoothness,gtwSmo,latent,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2
+Intensity step for checking signal source,ratio,latent,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Remove pixels close to image boundary,regMaskGap,latent,5,5,5,5,5,5,5,5,5,5,5,5
+Frames per segment,cut,latent,200,800,200,800,200,800,200,800,200,800,200,800
+Baseline window,movAvgWin,latent,25,25,25,25,25,25,25,25,25,25,25,25
+Event show threshold on raw data,minShow1,latent,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2
+Correct baseline trend,correctTrend,latent,1,1,1,1,1,1,1,1,1,1,1,1
+Propagation threshold minimum,propthrmin,latent,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Propagation threshold step,propthrstep,latent,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1
+Propagation threshold maximum,propthrmax,latent,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+How long duration ratio should be seen as footprint,compress,latent,0,0,0,0,0,0,0,0,0,0,0,0
+Check more time,gapExt,latent,5,5,5,5,5,5,5,5,5,5,5,5
+Downsample duration,TPatch,latent,20,20,20,20,20,20,20,20,20,20,20,20
+Max Downsample Spatial,maxSpaScale,latent,7,7,7,7,7,7,7,7,7,7,7,7
+Min Downsample Spatial,minSpaScale,latent,3,3,3,3,3,3,3,3,3,3,3,3
+,,,,,,,,,,,,,,
+Frame rate,frameRate,from data,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Spatial resolution,spatialRes,from data,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5
+Estimated noise variance,varEst,from data,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02,0.02
+Foreground threshold,fgFluo,from data,0,0,0,0,0,0,0,0,0,0,0,0
+Background threshold,bgFluo,from data,0,0,0,0,0,0,0,0,0,0,0,0
+X cooridante for north vector,northx,from data,0,0,0,0,0,0,0,0,0,0,0,0
+Y cooridante for north vector,northy,from data,1,1,1,1,1,1,1,1,1,1,1,1

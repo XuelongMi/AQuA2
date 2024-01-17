@@ -15,7 +15,7 @@ if ~exist('reCon','var') || isempty(reCon)
 end
 
 ov = [];
-T = sz(3);
+T = sz(4);
 ov.frame = cell(T,1);
 
 regionMap = zeros(sz,'uint16');
@@ -41,8 +41,8 @@ ov.sel = ones(nEvt,1);
 
 % pix for each region at each frame
 for tt=1:T
-    reg0 = regionMap(:,:,tt);
-    rec0 = single(reCon(:,:,tt))/255;
+    reg0 = regionMap(:,:,:,tt);
+    rec0 = single(reCon(:,:,:,tt))/255;
     reg0a = reg0(reg0>0);
     nReg = numel(unique(reg0a));
     if nReg>0

@@ -8,7 +8,7 @@ ov = getappdata(f,'ov');
 %% channel 1
 name = 'Events_Red'; 
 ov0 = ov(name);
-xSel = ones(numel(ov0.sel),1);
+xSel = true(numel(ov0.sel),1);
 if ~isempty(btSt.filterMsk1)
     xSel = xSel.*btSt.filterMsk1;
 end
@@ -25,7 +25,7 @@ ov(name) = ov0;
 %% channel 2
 name = 'Events_Green';
 ov0 = ov(name);
-xSel = ones(numel(ov0.sel),1);
+xSel = true(numel(ov0.sel),1);
 if ~isempty(btSt.filterMsk2)
     xSel = xSel.*btSt.filterMsk2;
 end

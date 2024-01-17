@@ -17,9 +17,9 @@ function drawReg2(~,~,f,op,lbl)
     
     if strcmp(op,'add')
         tmp = [];
-        hh = impoly(ax);
+        hh = drawpolygon(ax);
         if ~isempty(hh)
-            nPts = size(hh.getPosition,1);
+            nPts = size(hh.Position,1);
             if nPts>2
                 msk = flipud(hh.createMask);
                 tmp{1} = bwboundaries(msk);

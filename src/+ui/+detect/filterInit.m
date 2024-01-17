@@ -25,8 +25,8 @@ function filterInit(~,~,f)
         cmd0 = ['x=',fCmd{ii},';'];
         try
             eval(cmd0);
-            T{ii,3} = nanmin(x);
-            T{ii,4} = nanmax(x);
+            T{ii,3} = min(x);
+            T{ii,4} = max(x);
         catch
             fprintf('Feature missed\n')
             T{ii,3} = NaN;
@@ -42,8 +42,8 @@ function filterInit(~,~,f)
             cmd0 = ['x=',fCmd{ii},';'];
             try
                 eval(cmd0);
-                T{ii,3} = min(T{ii,3},nanmin(x));
-                T{ii,4} = max(T{ii,4},nanmax(x));
+                T{ii,3} = min(T{ii,3},min(x));
+                T{ii,4} = max(T{ii,4},max(x));
             catch
                 fprintf('Feature missed\n')
                 T{ii,3} = NaN;
@@ -53,9 +53,6 @@ function filterInit(~,~,f)
     end
     
     tb.Data = T;
-    tb.ColumnName = {'','Feature','Min','Max'};
-    tb.ColumnWidth = {20 100 60 60};
-    tb.ColumnEditable = [true,false,true,true];
     
     btSt = getappdata(f,'btSt');
     btSt.ftsCmd = fCmd;

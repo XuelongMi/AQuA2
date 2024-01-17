@@ -6,7 +6,7 @@ if ~exist('cfgNum','var')
 end
 
 if ~exist('cfgFile','var')
-    cfgFile = 'parameters1.csv';
+    cfgFile = 'parameters.csv';
 end
 
 opts = [];

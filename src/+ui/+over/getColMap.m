@@ -41,7 +41,7 @@ function getColMap(~,~,f)
     end
     
     fh = guidata(f);
-    fh.overlayColor.String = ['Random';colNames];
+    fh.overlayColor.Value = 'Random';
     
     btSt = getappdata(f,'btSt');
     btSt.colNames = colNames;

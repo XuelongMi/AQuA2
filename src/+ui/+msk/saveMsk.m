@@ -2,10 +2,13 @@ function saveMsk(~,~,f,op)
     
     fh = guidata(f);
     opts = getappdata(f,'opts');
-    sz = opts.sz;
     
     if op==1  % go back without saving
-        fh.g.Selection = 3;
+        fh.Card1.Visible = 'off';
+        fh.Card2.Visible = 'off';
+        fh.Card3.Visible = 'on';
+        fh.Card4.Visible = 'off';
+        f.KeyReleaseFcn = {@ui.mov.findKeyPress};
         return
     end
     
@@ -17,7 +20,11 @@ function saveMsk(~,~,f,op)
     end
     
     if isempty(bdMsk)
-        fh.g.Selection = 3;
+        fh.Card1.Visible = 'off';
+        fh.Card2.Visible = 'off';
+        fh.Card3.Visible = 'on';
+        fh.Card4.Visible = 'off';
+        f.KeyReleaseFcn = {@ui.mov.findKeyPress};
         return
     end
     
@@ -25,8 +32,6 @@ function saveMsk(~,~,f,op)
     opReg = fh.saveMskRegOp.Value;
     opLmk = fh.saveMskLmkOp.Value;
     opMar = fh.saveMarkerOp.Value;
-    fgMsk = ones(sz(1),sz(2));
-    bgMsk = zeros(sz(1),sz(2));
     regMskAll = [];
     lmkMskAll = [];
     markerMap = [];
@@ -38,14 +43,13 @@ function saveMsk(~,~,f,op)
             minRegSz = min(minRegSz,rr0.minSz);
             if isempty(regMskAll)
                 regMskAll = double(rr0.mask>0);
-                continue
             end
             switch opReg
-                case 1
+                case 'OR'
                     regMskAll = regMskAll+double(rr0.mask>0);
-                case 2
+                case 'AND'
                     regMskAll = regMskAll.*double(rr0.mask>0);
-                case 3
+                case 'SUB'
                     regMskAll(rr0.mask>0) = 0; %#ok<AGROW>
             end
         end
@@ -56,22 +60,16 @@ function saveMsk(~,~,f,op)
                 continue
             end
             switch opLmk
-                case 1
+                case 'OR'
                     lmkMskAll = lmkMskAll+double(rr0.mask>0);               
-                case 2
+                case 'AND'
                     lmkMskAll = lmkMskAll.*double(rr0.mask>0);
-                case 3
+                case 'SUB'
                     lmkMskAll(rr0.mask>0) = 0; %#ok<AGROW>
             end
         end
         if strcmp(rr0.type,'regionMarker')
             markerMap = rr0.mask;
-        end
-        if strcmp(rr0.type,'foreground')
-            fgMsk = rr0.mask;
-        end
-        if strcmp(rr0.type,'background')
-            bgMsk = rr0.mask;
         end
     end
     
@@ -156,117 +154,141 @@ function saveMsk(~,~,f,op)
 
     % export ------------           
     % clear previous regions from masks
+    % add new
+    H = opts.sz(1);
+    W = opts.sz(2);
+    L = opts.sz(3);
+
     if bd.isKey('cell')
         regAll = bd('cell');
     else
         regAll = [];
     end
-    for ii=1:numel(regAll)
-        tmp = regAll{ii};
-        if numel(tmp)>2 && strcmp(tmp{3},'auto')
-            regAll{ii} = [];
-        end        
-    end
-    if numel(regAll)>0
-        regAll = regAll(~cellfun(@isempty,regAll));
-    end
-    
+
     if bd.isKey('landmk')
         lmkAll = bd('landmk');
     else
         lmkAll = [];
     end
-    for ii=1:numel(lmkAll)
-        tmp = lmkAll{ii};
-        if numel(tmp)>2 && strcmp(tmp{3},'auto')
-            lmkAll{ii} = [];
-        end        
-    end
-    if numel(lmkAll)>0
-        lmkAll = lmkAll(~cellfun(@isempty,lmkAll));
-    end
+
+    if L == 1
+        for ii=1:numel(regAll)
+            tmp = regAll{ii};
+            if numel(tmp)>2 && strcmp(tmp{3},'auto')
+                regAll{ii} = [];
+            end        
+        end
+        if numel(regAll)>0
+            regAll = regAll(~cellfun(@isempty,regAll));
+        end
+
+        for ii=1:numel(lmkAll)
+            tmp = lmkAll{ii};
+            if numel(tmp)>2 && strcmp(tmp{3},'auto')
+                lmkAll{ii} = [];
+            end        
+        end
+        if numel(lmkAll)>0
+            lmkAll = lmkAll(~cellfun(@isempty,lmkAll));
+        end
+
+        nNow = numel(regAll);
+        for ii=1:ccReg.NumObjects
+            tmp = [];
+            xx = ccReg.PixelIdxList{ii};
+            if numel(xx)>10
+                msk = false(H,W,L);
+                msk(xx) = true;
+                tmp{1} = bwboundaries(msk);
+                %tmp{1} = [xx(:,2),H-xx(:,1)+1];
+                tmp{2} = xx;
+                tmp{3} = 'auto';
+                tmp{4} = 'None';
+                regAll{nNow+1} = tmp;
+                nNow = nNow+1;
+            end
+        end
     
-    % add new
-    H = opts.sz(1);
-    W = opts.sz(2);
-    nNow = numel(regAll);
-    for ii=1:ccReg.NumObjects
-        tmp = [];
-        xx = ccReg.PixelIdxList{ii};
-        if numel(xx)>10
+        % left->right top->bottom
+        regAllS = cell(1,numel(regAll));
+        pos = zeros(1,numel(regAll));
+        for i = 1:numel(regAll)
+            pix = regAll{i}{2};
+            [ih0,iw0,il0] = ind2sub(opts.sz(1:3),pix);
+            ihw = sub2ind([opts.sz(2),opts.sz(1),opts.sz(3)],iw0,ih0,il0);
+            pos(i) = min(ihw);
+        end
+        [~,num] = sort(pos);
+        for i = 1:numel(regAll)
+            regAllS{i} = regAll{num(i)};
+        end
+
+        nNow = numel(lmkAll);
+        for ii=1:ccLmk.NumObjects
+            tmp = [];
+            xx = ccLmk.PixelIdxList{ii};
             msk = zeros(H,W);
             msk(xx) = 1;
-            tmp{1} = bwboundaries(msk);
-            %tmp{1} = [xx(:,2),H-xx(:,1)+1];
+            if L==1
+                tmp{1} = bwboundaries(msk);
+            end
             tmp{2} = xx;
             tmp{3} = 'auto';
             tmp{4} = 'None';
-            regAll{nNow+1} = tmp;
-            nNow = nNow+1;
+            lmkAll{nNow+ii} = tmp;
+        end
+        
+        % left->right top->bottom
+        lmkAllS = cell(1,numel(lmkAll));
+        pos = zeros(1,numel(lmkAll));
+        for i = 1:numel(lmkAll)
+            pix = lmkAll{i}{2};
+            [ih0,iw0,il0] = ind2sub(opts.sz(1:3),pix);
+            ihw = sub2ind([opts.sz(2),opts.sz(1),opts.sz(3)],iw0,ih0,il0);
+            pos(i) = min(ihw);
+        end
+        [~,num] = sort(pos);
+        for i = 1:numel(lmkAll)
+            lmkAllS{i} = lmkAll{num(i)};
+        end
+    else
+        regAllS = false(H,W,L);
+        for ii=1:ccReg.NumObjects
+            xx = ccReg.PixelIdxList{ii};
+            regAllS(xx) = true;
+        end
+
+        lmkAllS = false(H,W,L);
+        for ii=1:ccLmk.NumObjects
+            xx = ccLmk.PixelIdxList{ii};
+            lmkAllS(xx) = true;
         end
     end
-    
-    % left->right top->bottom
-    regAllS = cell(1,numel(regAll));
-    pos = zeros(1,numel(regAll));
-    for i = 1:numel(regAll)
-        pix = regAll{i}{2};
-        [ih0,iw0] = ind2sub(opts.sz(1:2),pix);
-        ihw = sub2ind([opts.sz(2),opts.sz(1)],iw0,ih0);
-        pos(i) = min(ihw);
-    end
-    [~,num] = sort(pos);
-    for i = 1:numel(regAll)
-        regAllS{i} = regAll{num(i)};
-    end
     bd('cell') = regAllS;
-    
-    
-    nNow = numel(lmkAll);
-    for ii=1:ccLmk.NumObjects
-        tmp = [];
-        xx = ccLmk.PixelIdxList{ii};
-        msk = zeros(H,W);
-        msk(xx) = 1;
-        tmp{1} = bwboundaries(msk);
-        tmp{2} = xx;
-        tmp{3} = 'auto';
-        tmp{4} = 'None';
-        lmkAll{nNow+ii} = tmp;
-    end
-    
-    % left->right top->bottom
-    lmkAllS = cell(1,numel(lmkAll));
-    pos = zeros(1,numel(lmkAll));
-    for i = 1:numel(lmkAll)
-        pix = lmkAll{i}{2};
-        [ih0,iw0] = ind2sub(opts.sz(1:2),pix);
-        ihw = sub2ind([opts.sz(2),opts.sz(1)],iw0,ih0);
-        pos(i) = min(ihw);
-    end
-    [~,num] = sort(pos);
-    for i = 1:numel(lmkAll)
-        lmkAllS{i} = lmkAll{num(i)};
-    end
-    
     bd('landmk') = lmkAllS;
-    
     setappdata(f,'bd',bd);
 
     % foreground and background
     dat = getappdata(f,'datOrg1');
     datAvg = mean(dat,3);
-    if sum(bgMsk(:)==0)>0
-        bgFluo = median(datAvg(bgMsk==0));
-    else
-        bgFluo = 0;
-    end
-    opts.bgFluo = double(bgFluo);
-    opts.fgFluo = double(min(datAvg(fgMsk>0)));
     setappdata(f,'opts',opts);
 
-    fh.g.Selection = 3;
-    
+    fh.Card1.Visible = 'off';
+    fh.Card2.Visible = 'off';
+    fh.Card3.Visible = 'on';
+    fh.Card4.Visible = 'off';
+    f.KeyReleaseFcn = {@ui.mov.findKeyPress};
+    if L>1
+        dsSclXY = fh.sldDsXY.Value;
+        alphaMap = zeros([H,W,L],'single');
+        alphaMap(regAllS) = 1;
+        alphaMap = se.myResize(alphaMap,1/dsSclXY);
+        fh.ims.im1.AlphaData = alphaMap*(1-fh.sldIntensityTrans.Value);
+        pause(1e-4);
+        fh.ims.im2a.AlphaData = alphaMap*(1-fh.sldIntensityTransL.Value);
+        pause(1e-4);
+        fh.ims.im2b.AlphaData = alphaMap*(1-fh.sldIntensityTransR.Value);
+    end
     ui.movStep(f,[],[],1);
     
 end

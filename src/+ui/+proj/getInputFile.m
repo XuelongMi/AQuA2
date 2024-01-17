@@ -22,6 +22,6 @@ if exist('./cfg','dir')
 end
 
 if ~isempty(FileName) && ~isnumeric(FileName)
-    fh.fIn.String = [PathName,FileName];
+    fh.fIn.Value = [PathName,FileName];
 end
 end

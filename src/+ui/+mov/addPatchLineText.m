@@ -15,12 +15,13 @@ function addPatchLineText(f,axNow,n,updtAll)
         types = {'patch','text','line'};
         for ii=1:numel(types)
             h00 = findobj(axNow,'Type',types{ii});
-            %h00 = findobj(axNow,'Type',types{ii},'Tag','flex');
             if ~isempty(h00)
                 delete(h00);
             end
         end
     else
+%         nFlex = numel(axNow.Children)-1;
+%         delete(axNow.Children(1:nFlex));
         flexLst = getappdata(f,'flexLst');
         for ii=1:numel(flexLst)
             delete(flexLst{ii});
@@ -43,10 +44,8 @@ function addPatchLineText(f,axNow,n,updtAll)
                 end
                 for jj=1:numel(xyLst)
                     xy = xyLst{jj};
-                    %xy = bd0{ii}{1};
                     patch(axNow,'XData',xy(:,2),'YData',H-xy(:,1)+1,...
                         'FaceColor','none','LineStyle','-','EdgeColor',[0.5 0.5 0.8],'Tag','fix');
-%                     plot(axNow,xy(:,2),H-xy(:,1)+1,'Color',[0.5 0.5 0.8]);
                     if jj==1
                         text(axNow,xy(1,2)+2,H-xy(1,1)+2,Name,'Color',[0.7 0.7 0.9],'Tag','fix','FontSize',14);
                     end

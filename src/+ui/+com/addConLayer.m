@@ -1,94 +1,76 @@
-function addConLayer(f,bLayer)
+function addConLayer(f,pLayer)
+
+bLayer = uigridlayout(pLayer,'Padding',[0,0,0,0],'ColumnWidth',{'1x'},'RowHeight',{20,20,20,20,20,20,89,20,20,20,20,20,20,43,20,20,20,20,20,20,20,25,'1x'},'RowSpacing',3);
+uilabel(bLayer,'Text','Layers','BackgroundColor',[0 0.3 0.6],'FontColor','white');
 % movie
-bL1 = uix.VBox('Parent',bLayer,'Spacing',1,'Padding',3);
-uicontrol(bL1,'Style','text','String','--- Movie brightness/contrast ---');
-% uix.Empty('Parent',bL1);
-uicontrol(bL1,'Style','text','String','Min','HorizontalAlignment','left');
-uicontrol(bL1,'Style','slider','Tag','sldMin','Callback',{@ui.over.adjMov,f});
-uix.Empty('Parent',bL1);
-uicontrol(bL1,'Style','text','String','Max','HorizontalAlignment','left');
-uicontrol(bL1,'Style','slider','Tag','sldMax','Callback',{@ui.over.adjMov,f});
-uix.Empty('Parent',bL1);
+uilabel(bLayer,'Text','--- Movie brightness/contrast ---','HorizontalAlignment','center');
+uilabel(bLayer,'Text','  Min');
+uislider(bLayer,'Tag','sldMin','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjMov,f});
+uilabel(bLayer,'Text','  Max');
+uislider(bLayer,'Tag','sldMax','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjMov,f});
 
 % single view
-pBrightness = uix.CardPanel('Parent',bL1,'Tag','pBrightness');  % two sliders
-pB = uix.Grid('Parent',pBrightness);
-uicontrol(pB,'Style','text','String','Brightness_Green (Ch1)','HorizontalAlignment','left');
-uicontrol(pB,'Style','slider','Tag','sldBri1','Callback',{@ui.over.adjMov,f});
-uix.Empty('Parent',pB);
-uix.Empty('Parent',pB);
-uicontrol(pB,'Style','text','String','Brightness_Red (Ch2)','HorizontalAlignment','left');
-uicontrol(pB,'Style','slider','Tag','sldBri2','Callback',{@ui.over.adjMov,f});
-pB.Widths = [-1,2,-1];
-pB.Heights = [15,15];
+bLayer0 = uipanel(bLayer,'BorderType','none');
+pBrightness = uigridlayout(bLayer0,'Tag','pBrightness','Padding',[0,0,0,0],'ColumnWidth',{'1x','1x'},'RowHeight',{'1x','1x'},'RowSpacing',3,'ColumnSpacing',5);
+uilabel(pBrightness,'Text','  Brightness_Green (Ch1)','Tag','TextBri1'); uilabel(pBrightness,'Text','  Brightness_Red (Ch2)','Tag','TextBri2');
+uislider(pBrightness,'Tag','sldBri1','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjMov,f});
+uislider(pBrightness,'Tag','sldBri2','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjMov,f});
+p = uilabel(pBrightness,'Text','  Intensity Transparency (for 3D)','Tag','txtIntTrans','Enable','off');
+p.Layout.Column = [1,2];
+p = uislider(pBrightness,'Tag','sldIntensityTrans','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjTrans3D,f,'Main'},'Enable','off');
+p.Layout.Column = [1,2];
+pBrightness.Visible = 'off';
 
 % side by side view
-pBS = uix.Grid('Parent',pBrightness);
-uicontrol(pBS,'Style','text','String','Left Brightness','HorizontalAlignment','left');
-uicontrol(pBS,'Style','slider','Tag','sldBriL','Callback',{@ui.over.adjMov,f});
-uix.Empty('Parent',pBS);
-uix.Empty('Parent',pBS);
-uicontrol(pBS,'Style','text','String','Right Brightness','HorizontalAlignment','left');
-uicontrol(pBS,'Style','slider','Tag','sldBriR','Callback',{@ui.over.adjMov,f});
-pBS.Widths = [-1,2,-1];   pBS.Heights = [15,15];
+pBS = uigridlayout(bLayer0,'Tag','pBrightnessSideBySide','Padding',[0,0,0,0],'ColumnWidth',{'1x','1x'},'RowHeight',{'1x','1x','1x','1x'},'RowSpacing',3,'ColumnSpacing',5);
+uilabel(pBS,'Text','  Left Brightness'); uilabel(pBS,'Text','  Right Brightness');
+uislider(pBS,'Tag','sldBriL','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjMov,f});
+uislider(pBS,'Tag','sldBriR','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjMov,f});
+uilabel(pBS,'Text','  Left Trans (for 3D)','Tag','txtIntTransL','Enable','off');
+uilabel(pBS,'Text','  Right Trans (for 3D)','Tag','txtIntTransR','Enable','off');
+uislider(pBS,'Tag','sldIntensityTransL','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjTrans3D,f,'Left'},'Enable','off');
+uislider(pBS,'Tag','sldIntensityTransR','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjTrans3D,f,'Right'},'Enable','off');
+pBS.Visible = 'off';
+pBrightness.Visible = 'on';
 
-pBrightness.Selection = 1;
-bL1.Heights = [18,15,15,3,15,15,3,30];
+uilabel(bLayer,'Text','  Colorful Overlay Brightness');
+uislider(bLayer,'Tag','sldBriOv','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjMov,f,1});
 
-uix.Empty('Parent',bLayer);
+uilabel(bLayer,'Text','  Overlay Transparency (for 3D)','Tag','txtOvTrans','Enable','off');
+uislider(bLayer,'Tag','sldOverlayTrans','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjTrans3D,f,'Overlay'},'Enable','off');
+
+uilabel(bLayer,'Text','  Downsample XY dimension (for 3D)','Tag','txtDsXY','Enable','off');
+uislider(bLayer,'Tag','sldDsXY','MajorTicks',[],'MinorTicks',[],'ValueChangedFcn',{@ui.over.adjDS,f},'Enable','off','Limits',[1,10],'Value',1);
 
 % Channel
-bLChannel = uix.VBox('Parent',bLayer,'Spacing',1,'Padding',3);
-uicontrol(bLChannel,'Style','text','String','--- Channel Select ---');
-uicontrol(bLChannel,'Style','popupmenu','Tag','channelOption','String',...
-    {'Both','Results of channel 1','Results of channel 2'},'Callback',{@ui.over.channelOpt,f});
-bLChannel.Heights = [15,20];
-uix.Empty('Parent',bLChannel);
+pChannel = uigridlayout(bLayer,'Tag','pChannel','Padding',[0,0,0,0],'ColumnWidth',{'1x','1x'},'RowHeight',{'1x','1x'},'RowSpacing',3,'ColumnSpacing',5);
+uilabel(pChannel,'Text','Channel in Left view','HorizontalAlignment','center');
+uilabel(pChannel,'Text','Channel in Right view','HorizontalAlignment','center');
+uidropdown(pChannel,'Tag','channelOptionL','Items',{'Channel 1','Channel 2'},'Value','Channel 1','ValueChangedFcn',{@ui.over.channelOpt,f});
+uidropdown(pChannel,'Tag','channelOptionR','Items',{'Channel 1','Channel 2'},'Value','Channel 2','ValueChangedFcn',{@ui.over.channelOpt,f});
 
 % overlays
-bL2 = uix.VBox('Parent',bLayer,'Spacing',1,'Padding',3);
-uicontrol(bL2,'Style','text','String','--- Feature overlay ---');
-uicontrol(bL2,'Style','text','String','Type','HorizontalAlignment','left');
-uicontrol(bL2,'Style','popupmenu','Tag','overlayDat','String',{'None'},'Callback',{@ui.over.chgOv,f,1});
-uix.Empty('Parent',bL2);
-x0 = [18,15,20,3];
+uilabel(bLayer,'Text','--- Feature overlay ---','HorizontalAlignment','center');
+uilabel(bLayer,'Text','  Type');
+uidropdown(bLayer,'Tag','overlayDat','Items',{'None'},'ValueChangedFcn',{@ui.over.chgOv,f,1});
+uilabel(bLayer,'Text','  Feature');
+uidropdown(bLayer,'Tag','overlayFeature','Items',{'Index'},'Enable','off');
+uilabel(bLayer,'Text','  Color');
+uidropdown(bLayer,'Tag','overlayColor','Items',{'Random','GreenRed','RdBu','RdYlBu','YlGnBu'},'Enable','off');
 
-uicontrol(bL2,'Style','text','String','Feature','HorizontalAlignment','left');
-uicontrol(bL2,'Style','popupmenu','Tag','overlayFeature','String',{'Index'},'Enable','off');
-uicontrol(bL2,'Style','text','String','Color','HorizontalAlignment','left');
-uicontrol(bL2,'Style','popupmenu','Tag','overlayColor','String',{'Random','GreenRed'},'Enable','off');
-x1a = [15,20,15,20];
-uicontrol(bL2,'Style','text','String','Transform','HorizontalAlignment','left');
-uicontrol(bL2,'Style','popupmenu','Tag','overlayTrans','String',{'None','Square root','Log10'},'Enable','off');
-uicontrol(bL2,'Style','text','String','Divide','HorizontalAlignment','left');
-uicontrol(bL2,'Style','popupmenu','Tag','overlayScale','String',{'None','Size','SqrtSize'},'Enable','off');
-x1b = [15,20,15,20];
-uicontrol(bL2,'Style','text','String','Propagation direction','HorizontalAlignment','left');
-uicontrol(bL2,'Style','popupmenu','Tag','overlayPropDi','String',...
-    {'Anterior','Posterior','Lateral Left','Lateral Right'},'Enable','off');
-uicontrol(bL2,'Style','text','String','Landmark ID','HorizontalAlignment','left');
-uicontrol(bL2,'Style','edit','Tag','overlayLmk','String','1','Enable','off','HorizontalAlignment','left');
-x1c = [15,20,15,20];
-uix.Empty('Parent',bL2);
-x1 = [x1a,x1b,x1c,5];
+% uilabel(bLayer,'Text','  Transform');
+% uidropdown(bLayer,'Tag','overlayTrans','Items',{'None','Square root','Log10'},'Enable','off');
+% uilabel(bLayer,'Text','  Divide');
+% uidropdown(bLayer,'Tag','overlayScale','Items',{'None','Size','SqrtSize'},'Enable','off');
+% uilabel(bLayer,'Text','  Propagation direction');
+% uidropdown(bLayer,'Tag','overlayPropDi','Items', {'Anterior','Posterior','Lateral Left','Lateral Right'},'Enable','off');
+% uilabel(bLayer,'Text','  Landmark ID');
+% uieditfield(bLayer,'Tag','overlayLmk','Value','1','Enable','off');
 
-bDrawBt = uix.HButtonBox('Parent',bL2,'Spacing',5,'ButtonSize',[120,20]);
-uicontrol(bDrawBt,'String','Update overlay','Tag','updtFeature','Callback',{@ui.over.chgOv,f,2});
-uicontrol(bDrawBt,'String','Read features','Tag','addUserFeature','Callback',{@ui.over.chgOv,f,0});
-uicontrol(bDrawBt,'String','Read colormaps','Callback',{@ui.over.getColMap,f});
-uix.Empty('Parent',bL2);
-x2 = [20,12];
-
-uicontrol(bL2,'Style','text','String','Min','HorizontalAlignment','left','Tag','txtMinOv');
-uicontrol(bL2,'Style','slider','Tag','sldMinOv','Callback',{@ui.over.adjMov,f,1},'Enable','off');
-uicontrol(bL2,'Style','text','String','Max','HorizontalAlignment','left','Tag','txtMaxOv');
-uicontrol(bL2,'Style','slider','Tag','sldMaxOv','Callback',{@ui.over.adjMov,f,1},'Enable','off');
-uicontrol(bL2,'Style','text','String','Brightness','HorizontalAlignment','left');
-uicontrol(bL2,'Style','slider','Tag','sldBriOv','Callback',{@ui.over.adjMov,f,1});
-x3 = [15,15,15,15,15,15];
-
-bL2.Heights = [x0,x1,x2,x3];
-bLayer.Heights = [130,-1,40,440];
+bDrawBt = uigridlayout(bLayer,'Padding',[20,0,20,5],'ColumnWidth',{'1x','1x'},'RowHeight',{'1x'},'RowSpacing',5,'ColumnSpacing',5);
+uibutton(bDrawBt,'push','Text','Update overlay','Tag','updtFeature','ButtonPushedFcn',{@ui.over.chgOv,f,2});
+uibutton(bDrawBt,'push','Text','Update features','Tag','updtFeature1',...
+        'ButtonPushedFcn',{@ui.detect.updtFeature,f},'Enable','off');
 end
 
 

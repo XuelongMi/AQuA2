@@ -10,7 +10,7 @@ function regionSL(~,~,f,op,lbl)
 
             selname = char(selname);
             if isempty(selname)
-                selname = '_Cell.mat';
+                return;
             end
         else
             definput = {'_LandMark.mat'};
@@ -19,14 +19,14 @@ function regionSL(~,~,f,op,lbl)
 
             selname = char(selname);
             if isempty(selname)
-                selname = '_LandMark.mat';
+                return;
             end
         end
-        file0 = [opts.fileName,selname];
+        file0 = [opts.fileName1,selname];
         clear definput selname
 
         %file0 = [opts.fileName,'_AQuA']; SP, 18.07.16
-        selpath = uigetdir(opts.filePath,'Choose output folder');
+        selpath = uigetdir(opts.filePath1,'Choose output folder');
         path0 = [selpath,filesep,file0];
         if ~isnumeric(selpath)
             if bd.isKey(lbl)
@@ -37,7 +37,7 @@ function regionSL(~,~,f,op,lbl)
             save(path0,'bd0');
         end
     else
-       [file,path] = uigetfile({'*.mat;*.zip'},'Choose Region file',opts.filePath); 
+       [file,path] = uigetfile({'*.mat;*.zip'},'Choose Region file',opts.filePath1); 
        if ~isnumeric([path,file])
            [~,~,ext] = fileparts(file);
            if(strcmp(ext,'.mat'))
@@ -46,7 +46,7 @@ function regionSL(~,~,f,op,lbl)
                setappdata(f,'bd',bd);
                ui.movStep(f,[],[],1);
            else
-                prompt = {'Pixel number of growing ROIs (0: no grow):'};
+               prompt = {'Pixel number of growing ROIs (0: no grow):'};
                dlgtitle = 'Input';
                dims = [1 60];
                definput = {'0'};

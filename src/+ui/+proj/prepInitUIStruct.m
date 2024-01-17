@@ -10,7 +10,7 @@ if ~exist('dat','var')
     dat = rand(100,100,10);
 end
 
-[H,W,T] = size(dat);
+[H,W,L,T] = size(dat);
 
 % initial overlays and boundaries
 ov = containers.Map('UniformValues',0);
@@ -20,15 +20,10 @@ bd('None') = [];
 
 % set layer scale
 scl = [];
-if opts.usePG==0
-    scl.min = min(dat(:));
-    scl.max = max(dat(:));
-    scl.map = 0;
-else
-    scl.min = min(dat(:)).^2;
-    scl.max = max(dat(:)).^2;
-    scl.map = 1;
-end
+
+scl.min = double(min(dat(:)));
+scl.max = double(max(dat(:)));
+
 scl.bri1 = 1;
 scl.bri2 = 1;
 scl.briL = 1;

@@ -1,24 +1,68 @@
 function saveOpt(~,~,f)
     
-    opts = getappdata(f,'opts');
+    optsOrg = getappdata(f,'opts');
     % should update new changing
     fh = guidata(f);
-    opts.thrARScl = str2double(fh.thrArScl.String);
-    opts.smoXY = str2double(fh.smoXY.String);
-    opts.minSize = str2double(fh.minSize.String);
-    opts.minDur = str2double(fh.minDur.String);
-    opts.ratio = str2double(fh.ratio.String);
-%     opts.sigThr = str2double(fh.sigThr.String);
-    opts.cRise = str2double(fh.cRise.String);
-    opts.cDelay = str2double(fh.cDelay.String);
-    opts.gtwSmo = str2double(fh.gtwSmo.String);
-    opts.zThr = str2double(fh.zThr.String);
-    opts.ignoreMerge = fh.ignoreMerge.Value==1;
-    opts.mergeEventDiscon = str2double(fh.mergeEventDiscon.String);
-    opts.mergeEventCorr = str2double(fh.mergeEventCorr.String);
-    opts.mergeEventMaxTimeDif = str2double(fh.mergeEventMaxTimeDif.String);
-    opts.extendEvtRe = fh.extendEvtRe.Value==1;
-    opts.ignoreTau = fh.ignoreTau.Value==1;
+    opts = [];
+    opts.filePath1 = optsOrg.filePath1;
+    opts.fileName1 = optsOrg.fileName1;
+    opts.fileType1 = optsOrg.fileType1;
+    opts.filePath2 = optsOrg.filePath2;
+    opts.fileName2 = optsOrg.fileName2;
+    opts.fileType2 = optsOrg.fileType2;
+    opts.sz = optsOrg.sz;
+    
+    opts.registrateCorrect = find(strcmp(fh.bleachCorrect.Value,fh.bleachCorrect.Items));
+    opts.bleachCorrect = find(strcmp(fh.registrateCorrect.Value,fh.registrateCorrect.Items));
+    opts.medSmo = str2double(fh.medSmo.Value);
+    opts.smoXY = str2double(fh.smoXY.Value);
+    
+    opts.thrARScl = str2double(fh.thrArScl.Value);
+    opts.minSize = str2double(fh.minSize.Value);
+    opts.maxSize = str2double(fh.maxSize.Value);
+    opts.minDur = str2double(fh.minDur.Value);
+    opts.circularityThr = str2double(fh.circularityThr.Value);
+%     opts.spaMergeDist = str2double(fh.spaMergeDist.Value);
+    
+    opts.needTemp = fh.needTemp.Value;
+    opts.sigThr = str2double(fh.sigThr.Value);
+    opts.maxDelay = str2double(fh.maxDelay.Value);
+    opts.seedSzRatio = str2double(fh.seedSzRatio.Value);
+    opts.needRefine = fh.needRefine.Value;
+    opts.needGrow = fh.needGrow.Value;
+    
+    opts.needSpa = fh.needSpa.Value;
+    opts.sourceSzRatio = str2double(fh.sourceSzRatio.Value);
+    opts.sourceSensitivity = str2double(fh.sourceSensitivity.Value);
+    opts.whetherExtend = fh.whetherExtend.Value;
+
+    opts.detectGlo = fh.detectGlo.Value;
+    opts.gloDur = str2double(fh.gloDur.Value);
+
+    opts.ignoreTau = fh.ignoreTau.Value;
+    opts.propMetric = fh.propMetric.Value;
+    opts.networkFeatures = fh.networkFeatures.Value;
+    
+    opts.gtwSmo = optsOrg.gtwSmo;
+    opts.ratio = optsOrg.ratio;
+    opts.regMaskGap = optsOrg.regMaskGap;
+    opts.regMaskGap = optsOrg.regMaskGap;
+    opts.cut = optsOrg.cut;
+    opts.movAvgWin = optsOrg.movAvgWin;
+    opts.minShow1 = optsOrg.minShow1;
+    opts.correctTrend = optsOrg.correctTrend;
+    opts.propthrmin = optsOrg.propthrmin;
+    opts.propthrmax = optsOrg.propthrmax;
+    opts.propthrstep = optsOrg.propthrstep;
+    opts.compress = optsOrg.compress;
+    opts.gapExt = optsOrg.gapExt;
+    opts.frameRate = optsOrg.frameRate;
+    opts.spatialRes = optsOrg.spatialRes;
+    opts.northx = optsOrg.northx;
+    opts.northy = optsOrg.northy;
+    opts.TPatch = optsOrg.TPatch;
+    opts.maxSpaScale = optsOrg.maxSpaScale;
+    opts.minSpaScale = optsOrg.minSpaScale;    
     
     % SP, 18.07.16
     definput = {'_Opt.csv'};
@@ -36,7 +80,6 @@ function saveOpt(~,~,f)
     selpath = uigetdir(opts.filePath1,'Choose output folder');
     path0 = [selpath,filesep];
     if ~isnumeric(selpath)
-        opts.stdMap = nan;
         ui.proj.struct2csv(opts,[path0,file0]);
     end
     

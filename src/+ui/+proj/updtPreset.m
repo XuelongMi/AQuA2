@@ -7,26 +7,23 @@ function updtPreset(~,~,f,readTb)
     end
     
     if readTb>0
-        cfgFile = 'parameters1.csv';
-        cfg = readtable(cfgFile);
+        cfgFile = 'parameters.csv';
+        cfg = readtable(cfgFile,'PreserveVariableNames',true);
         cNames = cfg.Properties.VariableNames(4:end-1);
-        cfg = readtable(cfgFile,'ReadVariableNames',false);
-%         cNames = cfg{1,4:end-1};
-        
-        fh.preset.String = cNames;
+        fh.preset.Items = cNames;
     end
     
-    preset = fh.preset.Value;
-    opts = util.parseParam(preset,0);
+    preset = find(strcmp(fh.preset.Items,fh.preset.Value));
+    opts = util.parseParam(preset);
     
     if isfield(opts,'frameRate') && ~isempty(opts.frameRate)
-        fh.tmpRes.String = num2str(opts.frameRate);
+        fh.tmpRes.Value = num2str(opts.frameRate);
     end
     if isfield(opts,'spatialRes') && ~isempty(opts.spatialRes)
-        fh.spaRes.String = num2str(opts.spatialRes);
+        fh.spaRes.Value = num2str(opts.spatialRes);
     end
     if isfield(opts,'regMaskGap') && ~isempty(opts.regMaskGap)
-        fh.bdSpa.String = num2str(opts.regMaskGap);
+        fh.bdSpa.Value = num2str(opts.regMaskGap);
     end    
     
 end

@@ -15,7 +15,7 @@ datMean = datMean-min(datMean(:));
 datMean = datMean/max(datMean(:));
 
 %% overlay
-evt2D = res.fts.loc.x2D;
+evt2D = res.fts.loc.xSpa;
 ov0 = res.ov(res.btSt.overlayDatSel);
 col = ov0.col;
 

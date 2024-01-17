@@ -11,8 +11,7 @@ function [pixChange] = pixResize_half_spa_temp(pix,ratio,t_scl,H,W,T)
     
     select = ih<=H0 & iw<=W0 & it<=T0;
     pix = sub2ind([H0,W0,T],ih(select),iw(select),it(select));
-    [C,ia,ic] = unique(pix);
+    [C,~,ic] = unique(pix);
     a_counts = accumarray(ic,1);
     pixChange = C(a_counts>ratio*ratio*t_scl/2);
-%     pixMix = setdiff(C,pixChange);
 end

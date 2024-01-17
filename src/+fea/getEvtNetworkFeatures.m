@@ -2,41 +2,34 @@ function res = getEvtNetworkFeatures(evts,sz)
 % getEvtNetworkFeatures get network work level features for each event
 % Not include evnet level features like size and brightness
 % Pre-filter with bounding box overlapping
+% Rewritten by Xuelong Mi, 04/05/2023
 
-H = sz(1); W = sz(2); T = sz(3);
+H = sz(1); W = sz(2); L= sz(3); T = sz(4);
 
 nEvt = numel(evts);
-ex = zeros(nEvt,6);
-% ex = false(nEvt,H,W);
-% ex2 = zeros(nEvt,2);
 evtSize = zeros(nEvt,1);
 idxBad = true(nEvt,1);
 tIdx = cell(T,1);
+evtMap = zeros(sz,'uint16');
+evtIhw = cell(nEvt,1);
+evtTW = nan(nEvt,2);
 for nn=1:nEvt
     pix0 = evts{nn};
     if ~isempty(pix0)
+        evtMap(pix0) = nn;
         idxBad(nn) = false;
-        [ih,iw,it] = ind2sub([H,W,T],pix0);
-        ihw = sub2ind([H,W],ih,iw);
+        [ih,iw,il,it] = ind2sub([H,W,L,T],pix0);
+        ihw = sub2ind([H,W,L],ih,iw,il);
         ihw = unique(ihw);
+        evtIhw{nn} = ihw;
         evtSize(nn) = numel(ihw);
-        % origin
-        ex(nn,:) = [min(ih),max(ih),min(iw),max(iw),min(it),max(it)];
-        % improved
-%         tmp = false(H,W);
-%         tmp(ihw) = true;
-%         ex(nn,:,:) = tmp;
-%         ex2(nn,1) = min(it);
-%         ex2(nn,2) = max(it);
-        
-        for tt=min(it):max(it)
-            tIdx{tt} = union(tIdx{tt},nn);
-        end
+        evtTW(nn,:) = [min(it),max(it)];
     end
 end
-tLen = cellfun(@numel,tIdx);
-regSel = ones(nEvt,1);
-regSel(idxBad) = 0;
+evtMap = reshape(evtMap,[],T);
+for t = 1:T
+    tIdx{t} = setdiff(evtMap(:,t),0);
+end
 
 % all events and events with similar size
 nOccurSameLoc = nan(nEvt,2);
@@ -47,44 +40,27 @@ for ii=1:nEvt
     if mod(ii,1000)==0
         fprintf('%d\n',ii);
     end    
-    if regSel(ii)==0
+    if idxBad(ii)
         continue
     end
-    p0 = ex(ii,:);
-    h0 = p0(1); h1 = p0(2);
-    w0 = p0(3); w1 = p0(4);
-    t0 = p0(5); t1 = p0(6);
-%     t0 = ex2(ii,1);
-%     t1 = ex2(ii,2);
-    % occur at same spatial location
-    isSel = h0<=ex(:,2) & h1>=ex(:,1) & w0<=ex(:,4) & w1>=ex(:,3);
-%     p0 = ex(ii,:,:);
-%     isSel = [];
-%     for jj=1:nEvt
-%         interRegion = p0&ex(jj,:,:);
-%         if sum(interRegion(:)>0)
-%             isSel = [isSel,jj];
-%         end
-%     end
-    %isSel(ii) = 0;
-    if sum(isSel)>0
-        szCo = evtSize(isSel);
-        szMe = evtSize(ii);
-        idxSel = find(isSel);        
-        isSelSimilarSize = szMe./szCo<2 & szMe./szCo>1/2;
-        nOccurSameLoc(ii,1) = sum(1*isSel);
-        nOccurSameLoc(ii,2) = sum(1*isSelSimilarSize);        
-        occurSameLocList{ii,1} = idxSel;
-        occurSameLocList{ii,2} = idxSel(isSelSimilarSize);        
-    end
-    
+    ihw = evtIhw{ii};
+    lst = setdiff(evtMap(ihw,:),0);
+    occurSameLocList{ii,1} = lst;
+    nOccurSameLoc(ii,1) = numel(lst);
+    szCo = evtSize(lst);
+    szMe = evtSize(ii);
+    isSelSimilarSize = szMe./szCo<2 & szMe./szCo>1/2;
+    occurSameLocList{ii,2} = lst(isSelSimilarSize);
+    nOccurSameLoc(ii,2) = sum(isSelSimilarSize);
+
     % occur at same time
-    tLen0 = tLen(t0:t1);
-    tIdx0 = tIdx(t0:t1);
-    [x,ix] = max(tLen0);
-    tIdx0 = tIdx0{ix};
-    nOccurSameTime(ii) = x;
-    occurSameTimeList{ii} = tIdx0;
+    t0 = evtTW(ii,1); t1 = evtTW(ii,2);
+    lst = [];
+    for t = t0:t1
+        lst = union(lst,tIdx{t});
+    end
+    occurSameTimeList{ii} = lst;
+    nOccurSameTime(ii) = numel(lst);    
 end
 
 % output ----
@@ -93,7 +69,6 @@ res.nOccurSameLoc = nOccurSameLoc;
 res.nOccurSameTime = nOccurSameTime;
 res.occurSameLocList = occurSameLocList;
 res.occurSameTimeList = occurSameTimeList;
-
 end
 
 

@@ -1,9 +1,10 @@
 function welcome(~,~,f)
 fh = guidata(f);
 % keyboard
-fh.g.Selection = 1;
-Pix_SS = get(0,'screensize');
-h0 = Pix_SS(4); w0 = Pix_SS(3);
-f.Position = [w0/2-150,h0/2-150,400,300];
+f.KeyReleaseFcn = [];
+fh.Card1.Visible = 'on';
+fh.Card2.Visible = 'off';
+fh.Card3.Visible = 'off';
+fh.Card4.Visible = 'off';
 % f.Resize = 'off';
 end

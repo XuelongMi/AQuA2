@@ -1,49 +1,34 @@
-function addCon_proj(f,g)
+function addCon_proj(f,bWel,bNew)
 % Welcome
-bWel = uix.VButtonBox('Parent',g,'Spacing',20);
-uicontrol(bWel,'String','New project','Callback',{@ui.proj.newProj,f});
-uicontrol(bWel,'String','Load existing','Callback',{@ui.proj.loadExp,f});
-bWel.ButtonSize = [150,50];
+uibutton(bWel,'push','Text','New project','ButtonPushedFcn',{@ui.proj.newProj,f},'FontSize',18);
+uibutton(bWel,'push','Text','Load existing','ButtonPushedFcn',{@ui.proj.loadExp,f},'FontSize',18);
 
 % New proj
-bNew = uix.VBox('Parent',g,'Spacing',5,'Padding',5);
-uix.Empty('Parent',bNew);
-uicontrol('Parent',bNew,'Style','text','String','Movie (TIFF stack) Channel 1 (If only one channel, please add path here)','HorizontalAlignment','left');
-bNew1 = uix.HBox('Parent',bNew);
-uicontrol('Parent',bNew,'Style','text','String','Movie (TIFF stack) Channel 2','HorizontalAlignment','left');
-bNew2 = uix.HBox('Parent',bNew);
-uix.Empty('Parent',bNew);
+bNew1 = uigridlayout(bNew,'ColumnWidth',{'1x',20},'RowHeight',{15,20,15,20},'Padding',[0,0,0,0],'ColumnSpacing',5,'RowSpacing',5);
+p = uilabel(bNew1,'Text','Movie (TIFF stack) Channel 1 (If only one channel, please add path here)');
+p.Layout.Column = [1,2];
+uieditfield(bNew1,'text','Tag','fIn1');
+uibutton(bNew1,'push','Text','...','ButtonPushedFcn',{@ui.proj.getInputFile1,f});
+p = uilabel(bNew1,'Text','Movie (TIFF stack) Channel 2');
+p.Layout.Column = [1,2];
+uieditfield(bNew1,'text','Tag','fIn2');
+uibutton(bNew1,'push','Text','...','ButtonPushedFcn',{@ui.proj.getInputFile2,f});
 
 % event detection: data settings
-pDeProp = uix.Grid('Parent',bNew);
-uicontrol(pDeProp,'Style','popupmenu','Tag','preset','Callback',{@ui.proj.updtPreset,f});
-uicontrol(pDeProp,'Style','edit','String','1','Tag','tmpRes');
-uicontrol(pDeProp,'Style','edit','String','1','Tag','spaRes');
-uicontrol(pDeProp,'Style','edit','String','2','Tag','bdSpa');
-uicontrol(pDeProp,'Style','text','String','Data type (presets)','HorizontalAlignment','left');
-uicontrol(pDeProp,'Style','text','String','Temporal resolution: second per frame','HorizontalAlignment','left');
-uicontrol(pDeProp,'Style','text','String','Spatial resolution: um per pixel','HorizontalAlignment','left');
-uicontrol(pDeProp,'Style','text','String','Exclude pixels shorter than this distance to border','HorizontalAlignment','left');
-pDeProp.Widths = [100,-1];
-pDeProp.Heights = [20,20,20,20];
-% pDeProp.Padding = 10;
-pDeProp.Spacing = 8;
+pDeProp = uigridlayout(bNew,'ColumnWidth',{100,'1x'},'RowHeight',{20,20,20,20},'Padding',[0,0,0,15],'ColumnSpacing',5,'RowSpacing',5);
+uidropdown(pDeProp,'Tag','preset','ValueChangedFcn',{@ui.proj.updtPreset,f});
+uilabel(pDeProp,'Text','Data type (presets)');
+uieditfield(pDeProp,'Value','1','Tag','tmpRes');
+uilabel(pDeProp,'Text','Temporal resolution: second per frame');
+uieditfield(pDeProp,'Value','1','Tag','spaRes');
+uilabel(pDeProp,'Text','Spatial resolution: um per pixel');
+uieditfield(pDeProp,'Value','2','Tag','bdSpa');
+uilabel(pDeProp,'Text','Exclude pixels shorter than this distance to border');
 
-bload = uix.HButtonBox('Parent',bNew,'Spacing',25);
-uicontrol(bload,'String','< Back','Callback',{@ui.proj.welcome,f});
-uicontrol(bload,'String','Open','Callback',{@ui.proj.prep,f});
-uicontrol(bload,'String','Load presets','Callback',{@ui.proj.updtPreset,f});
-bload.ButtonSize = [110,20];
-uix.Empty('Parent',bNew);
-bNew.Heights = [-1,15,20,15,20,15,120,20,-1];
-% bNew.Heights = [-1,15,20,15,20,15,120,20,-1];
-
-uicontrol(bNew1,'Style','edit','Tag','fIn1','HorizontalAlignment','left');
-uicontrol(bNew1,'String','...','Callback',{@ui.proj.getInputFile1,f});
-bNew1.Widths = [-1,20];
-uicontrol(bNew2,'Style','edit','Tag','fIn2','HorizontalAlignment','left');
-uicontrol(bNew2,'String','...','Callback',{@ui.proj.getInputFile2,f});
-bNew2.Widths = [-1,20];
+bload = uigridlayout(bNew,'ColumnWidth',{'1x','1x','1x'},'RowHeight',{'1x'},'Padding',[10,5,10,15],'ColumnSpacing',25,'RowSpacing',5);
+uibutton(bload,'push','Text','< Back','ButtonPushedFcn',{@ui.proj.welcome,f});
+uibutton(bload,'push','Text','Open','ButtonPushedFcn',{@ui.proj.prep,f});
+uibutton(bload,'push','Text','Load presets','ButtonPushedFcn',{@ui.proj.updtPreset,f});
 
 end
 

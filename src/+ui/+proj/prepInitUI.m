@@ -1,110 +1,89 @@
-function prepInitUI(f,fh,opts,scl,~,stg,~)
-    
+function prepInitUI(f,fh,opts,scl,~,stg,op)
+% ----------- Modified by Xuelong Mi, 11/09/2022 -----------    
     % layer panel
-    gap0 = [0.01 0.1];
-    fh.sldMin.Min = scl.min;
-    fh.sldMin.Max = scl.max;
-    fh.sldMin.SliderStep = gap0;
+    fh.sldMin.Limits = [scl.min scl.max];
     fh.sldMin.Value = scl.min;
     
-    fh.sldMax.Min = scl.min;
-    fh.sldMax.Max = scl.max;
-    fh.sldMax.SliderStep = gap0;
+    fh.sldMax.Limits = [scl.min scl.max];
     fh.sldMax.Value = scl.max;
     
-    fh.sldBri1.Min = 0.1;
-    fh.sldBri1.Max = 10;
-    fh.sldBri1.SliderStep = gap0;
+    fh.sldBri1.Limits = [0,10];
     fh.sldBri1.Value = scl.bri1;
     
-    fh.sldBri2.Min = 0.1;
-    fh.sldBri2.Max = 10;
-    fh.sldBri2.SliderStep = gap0;
-    fh.sldBri2.Value = scl.bri1;
+    if ~opts.singleChannel
+        fh.sldBri2.Limits = [0,10];
+        fh.sldBri2.Value = scl.bri1;
+    end
     
-    fh.sldBriL.Min = 0.1;
-    fh.sldBriL.Max = 10;
-    fh.sldBriL.SliderStep = gap0;
+    fh.sldBriL.Limits = [0,10];
     fh.sldBriL.Value = scl.briL;
     
-    fh.sldBriR.Min = 0.1;
-    fh.sldBriR.Max = 10;
-    fh.sldBriR.SliderStep = gap0;
+    fh.sldBriR.Limits = [0,10];
     fh.sldBriR.Value = scl.briR;
     
-    fh.sldMinOv.Min = 0;
-    fh.sldMinOv.Max = 1;
-    fh.sldMinOv.SliderStep = gap0;
-    fh.sldMinOv.Value = scl.minOv;
-    
-    fh.sldMaxOv.Min = 0;
-    fh.sldMaxOv.Max = 1;
-    fh.sldMaxOv.SliderStep = gap0;
-    fh.sldMaxOv.Value = scl.maxOv;
-    
-    fh.sldBriOv.Min = 0;
-    fh.sldBriOv.Max = 1;
-    fh.sldBriOv.SliderStep = gap0;
+    fh.sldBriOv.Limits = [0,1];
     fh.sldBriOv.Value = scl.briOv;
+
+    if opts.sz(3)>1
+        fh.xPos.Limits = [1,opts.sz(2)];
+        fh.xPos.Value = (1+opts.sz(2))/2;
+    
+        fh.yPos.Limits = [1,opts.sz(1)];
+        fh.yPos.Value = (1+opts.sz(1))/2;
+
+        fh.zPos.Limits = [1,opts.sz(3)];
+        fh.zPos.Value = (1 + opts.sz(3))/2;
+    end
+
+    T = opts.sz(4);
+%     gap = round(T/100);
+    fh.curve.XLim = [0,T+1];
+    xticks(fh.curve,'auto');
+%     fh.curve.xTick = 0:opts.sz(3)
     
     % data panel
-    fh.sldMov.Min = 1;
-    fh.sldMov.Max = opts.sz(3);
-    fh.sldMov.SliderStep = [1/opts.sz(3),0.05];
-%     fh.sldMov.BlockIncrement = 1;
-%     fh.sldMov.VisibleAmount = 0;
+    fh.sldMov.Limits = [1,opts.sz(4)];
     fh.sldMov.Value = 1;
+
+    % data panel
+    fh.sldActThr.Limits = [0,max(10,opts.thrARScl)];
+    fh.sldActThr.Value = opts.thrARScl;
     
     % detection parameters
-    try
-        fh.bleachCorrect.Value = opts.bleachCorrect;
-        if(fh.bleachCorrect.Value==0)
-            fh.bleachCorrect.Value = 1;
+    if op==0
+        fh.registrateCorrect.Value = fh.registrateCorrect.Items{opts.registrateCorrect};
+        fh.bleachCorrect.Value = fh.bleachCorrect.Items{opts.bleachCorrect};
+        fh.medSmo.Value = num2str(opts.medSmo);
+        fh.smoXY.Value = num2str(opts.smoXY);
+
+        fh.thrArScl.Value = num2str(opts.thrARScl);
+        fh.minSize.Value = num2str(opts.minSize);
+        fh.maxSize.Value = num2str(opts.maxSize);
+        fh.circularityThr.Value = num2str(opts.circularityThr);
+        fh.minDur.Value = num2str(opts.minDur);
+        fh.spaMergeDist.Value = num2str(opts.spaMergeDist);
+        
+        fh.needTemp.Value = opts.needTemp;
+        fh.seedSzRatio.Value = num2str(opts.seedSzRatio);
+        fh.sigThr.Value = num2str(opts.sigThr);
+        fh.maxDelay.Value = num2str(opts.maxDelay);
+        fh.needRefine.Value = opts.needRefine;
+        fh.needGrow.Value = opts.needGrow;
+        
+        fh.needSpa.Value = opts.needSpa;
+        fh.sourceSzRatio.Value = num2str(opts.sourceSzRatio);
+        fh.sourceSensitivity.Value = num2str(opts.sourceSensitivity);
+        try
+            fh.whetherExtend.Value = opts.whetherExtend;
         end
-    catch
-        fh.bleachCorrect.Value = 1;
+
+        fh.detectGlo.Value = opts.detectGlo;
+        fh.gloDur.Value = num2str(opts.gloDur);
+
+        fh.ignoreTau.Value = opts.ignoreTau;
+        fh.propMetric.Value = opts.propMetric;
+        fh.networkFeatures.Value = opts.networkFeatures;
     end
-    
-    fh.thrArScl.String = num2str(opts.thrARScl);
-    fh.smoXY.String = num2str(opts.smoXY);
-    fh.minSize.String = num2str(opts.minSize);
-    try
-        fh.smoT.String = num2str(opts.smoT);
-    catch
-        
-    end
-    
-    fh.minDur.String = num2str(opts.minDur);
-    fh.ratio.String = num2str(opts.ratio);
-    fh.sigThr.String = num2str(opts.sigThr);
-    try
-        fh.maxDelay.String = num2str(opts.maxDelay);
-    catch
-        
-    end
-    
-    try
-        fh.splitRatio.String = num2str(opts.splitRatio);
-    catch
-        
-    end
-    fh.cRise.String = num2str(opts.cRise);
-    fh.cDelay.String = num2str(opts.cDelay);
-    fh.gtwSmo.String = num2str(opts.gtwSmo);
-    
-    fh.zThr.String = num2str(opts.zThr);
-    
-    fh.ignoreMerge.Value = 1*(opts.ignoreMerge>0);
-    fh.mergeEventDiscon.String = num2str(opts.mergeEventDiscon);
-    fh.mergeEventCorr.String = num2str(opts.mergeEventCorr);
-    fh.mergeEventMaxTimeDif.String = num2str(opts.mergeEventMaxTimeDif);
-    
-    fh.extendEvtRe.Value = 1*(opts.extendEvtRe>0);
-    
-    fh.ignoreTau.Value = 1*(opts.ignoreTau>0);
-    
-    % color overlay
-    ui.over.getColMap([],[],f);
     
     try
         % update overlay menu
@@ -119,8 +98,9 @@ function prepInitUI(f,fh,opts,scl,~,stg,~)
     end
     
     % resize GUI
-    fh.g.Selection = 3;
-    f.Resize = 'on';
+    fh.Card2.Visible = 'off';
+    fh.Card3.Visible = 'on';
+    f.KeyReleaseFcn = {@ui.mov.findKeyPress};
     f.Position = getappdata(f,'guiMainSz');
     
     dbgx = getappdata(f,'dbg');
@@ -128,31 +108,18 @@ function prepInitUI(f,fh,opts,scl,~,stg,~)
     
     % UI visibility according to steps
     if stg.detect==0  % not started yet
-        xx = fh.deOutTab.TabEnables;
-        for ii=2:numel(xx)
-            xx{ii} = 'off';
-        end
-        fh.deOutTab.TabEnables = xx;
         fh.deOutNext.Enable = 'off';
         fh.pFilter.Visible = 'off';
         fh.pExport.Visible = 'off';
         fh.pEvtMngr.Visible = 'off';
         fh.pSys.Visible = 'off';
-        fh.deOutTab.Selection = 1;
+        fh.deOutTab.SelectedTab  = fh.deOutTab.Children(1);
         fh.deOutBack.Visible = 'off';
     else  % finished
         ui.detect.filterInit([],[],f);
-        evtLst = getappdata(f,'evtLst');
-        xx = fh.deOutTab.TabEnables;
-        for ii=1:numel(xx)-1
-            xx{ii} = 'off';
-        end
-        fh.deOutTab.TabEnables = xx;
         fh.deOutBack.Enable = 'off';
-        fh.deOutTab.Selection = numel(xx);
-%         if isempty(evtLst) && dbgx==0
-%             fh.bWkfl.Heights(2) = 0;  % never show detection part again
-%         end
+        fh.deOutTab.SelectedTab = fh.deOutTab.Children(end);
+        fh.deOutNext.Enable = 'on';
     end
 
     

@@ -1,30 +1,18 @@
-function TW = getMajorityTem(curve,TW,pix,sz,forMerging)
-
-    if(~exist('forMerging','var'))
-        forMerging = 0;
-    end
-
-    t00 = min(TW);
-    t11 = max(TW);
-    ext = 3;
-    ext00 = 0;
-    H = sz(1); W = sz(2); T = sz(3);
-    [~,~,it]  = ind2sub([H,W,T],pix);
-    t0 = max(1,min(it)-ext00); t1 = min(T,max(it)+ext00);
+function [TW,tPeak] = getMajorityTem(curve,t00,t11,t0,t1)
+% Modified by Xuelong, 02/21/2023
+% get the major time window of curve
+% t00 and t11 are the bounds
+% t0,t1 are the seed time window
 
     %% Spatial majority
-    s0 = sqrt(median((curve(2:end)-curve(1:end-1)).^2)/0.9133);
+    s0 = 1; % already normalized
     [~,tPeak] = max(curve(t00:t11));
     tPeak = tPeak + t00 - 1;
 
     % start time
-    if(forMerging)
-        [minV,tw0] = min(curve(t00:max(t00,tPeak-ext)));
-        tw0 = tw0 + t00 - 1;
-    else
-        % new change here
-        tw0 = t00; minV = curve(tw0);
-    end
+    [minV,tw0] = min(curve(t00:tPeak));
+    tw0 = tw0 + t00 - 1;
+
     ts = tw0;
     
     for t = tw0:-1:t0
@@ -39,14 +27,9 @@ function TW = getMajorityTem(curve,TW,pix,sz,forMerging)
     end
 
     % end time
-    if(forMerging)
-        tRs = min(t11,tPeak+ext);
-        [minV,tw1] = min(curve(tRs:t11));
-        tw1 = tw1 + tRs - 1;
-    else
-        % new change here
-        tw1 = t11;minV = curve(tw1);
-    end
+    [minV,tw1] = min(curve(tPeak:t11));
+    tw1 = tw1 + tPeak - 1;
+
     te = tw1;
     for t = tw1:t1
         if(curve(t)<minV)
@@ -71,5 +54,6 @@ function TW = getMajorityTem(curve,TW,pix,sz,forMerging)
 %     end
 %     ts = min(ts,TW(1));
 %     te = max(te,TW(end));
+
     TW = ts:te;
 end

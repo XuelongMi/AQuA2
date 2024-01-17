@@ -12,7 +12,8 @@ function [CFU_region,CFU_lst,weightedIhw,evtIhw] = CFU_minMeasure(cfu_pre,select
     
     H = sz(1);
     W = sz(2);
-    T = sz(3);
+    L = sz(3);
+    T = sz(4);
     nNode = numel(select);    
     [CFU_lst] = cfu.hierarchicalClusteringMinMeasure(linkage,nNode,1-thr);
     if(isempty(CFU_lst))
@@ -27,7 +28,7 @@ function [CFU_region,CFU_lst,weightedIhw,evtIhw] = CFU_minMeasure(cfu_pre,select
     CFU_region = cell(numel(CFU_lst),1);
     for i = 1:numel(CFU_lst)
         lst = CFU_lst{i};
-        weightMap = zeros(H,W);
+        weightMap = zeros(H,W,L,'single');
         for j = 1:numel(lst)
             label = lst(j);
             weightMap(evtIhw{label}) = weightMap(evtIhw{label}) + weightedIhw{label}*maxCounts(label);

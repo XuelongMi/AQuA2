@@ -22,22 +22,25 @@ function evtMngrSelectOne(~,evtDat,f)
     end
     evtNow = dat{idxNow,3};
     nCh = dat{idxNow,2};
-    % show curve
+
+    % jump to frame
     if(nCh==1)
-        ui.evt.curveRefresh([],[],f,evtNow,[]);
         fts = getappdata(f,'fts1');
     else
-        ui.evt.curveRefresh([],[],f,[],evtNow);
         fts = getappdata(f,'fts2');
     end
-    
-    % jump to frame
     n0 = fts.curve.tBegin(evtNow);
     n1 = fts.curve.tEnd(evtNow);
     n = round((n0+n1)/2);
-    ui.movStep(f,n);
     fh.sldMov.Value = n;
-    
+    ui.movStep(f,n);
+
+    % show curve
+    if(nCh==1)
+        ui.evt.curveRefresh([],[],f,evtNow,[]);
+    else
+        ui.evt.curveRefresh([],[],f,[],evtNow);
+    end    
 end
 
 

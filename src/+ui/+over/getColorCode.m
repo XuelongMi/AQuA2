@@ -18,61 +18,30 @@ end
 
 col0 = zeros(nEvt,3);
 
-if(opts.singleChannel)
-    if strcmp(cType,'Random')
-        for nn=1:nEvt
+if strcmp(cType,'Random')
+    for nn=1:nEvt
+        x = rand(1,3);
+        while (x(1)>0.8 && x(2)>0.8 && x(3)>0.8) || sum(x)<1
             x = rand(1,3);
-            while (x(1)>0.8 && x(2)>0.8 && x(3)>0.8) || sum(x)<1
-                x = rand(1,3);
-            end
-            x = x/max(x);
-            col0(nn,:) = x;
         end
-        return
+        x = x/max(x);
+        col0(nn,:) = x;
     end
-else
-   if(nCh==1) 
-       if strcmp(cType,'Random')
-            for nn=1:nEvt
-                x = rand(1,3);
-                while x(2)<0.8 || x(1)>0.5 || sum(x)<1
-                    x = rand(1,3);
-                end
-                x = x/max(x);
-                col0(nn,:) = x;
-            end
-            return
-       end
-   else
-       if strcmp(cType,'Random')
-            for nn=1:nEvt
-                x = rand(1,3);
-                while x(1)<0.8 || x(2)>0.5 || sum(x)<1
-                    x = rand(1,3);
-                end
-                x = x/max(x);
-                col0(nn,:) = x;
-            end
-            return
-       end
-   end
+    return
 end
 
 % other color schemes
-btSt = getappdata(f,'btSt');
-colName = btSt.colNames;
-colMapLst = btSt.colVals;
-
-idxGood = strcmp(cType,colName);
-idx = find(idxGood,1);
-cMap = colMapLst{idx};
+if strcmp(cType,'GreenRed')
+    cMap = [0,1,0;1,0,0];
+else
+    cMap = brewermap(50,cType);
+end
 
 sclx = [];
 sclx.minOv = min(cVal);
 sclx.maxOv = max(cVal);
 
 col0 = ui.over.reMapCol(cMap,cVal,sclx);
-
 end
 
 

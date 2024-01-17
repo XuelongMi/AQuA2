@@ -1,6 +1,6 @@
 function root = findRootLabel(labels,id)
-    root = id;
-    while(labels(root)~=root)
-        root = labels(root);
+    if (labels(id) ~= id)
+        labels(id) = cfu.findRootLabel(labels, labels(id));
     end
+    root = labels(id);
 end

@@ -6,8 +6,8 @@ idxGood = [];
 channels = [];
 for ii=1:size(dat,1)
     if dat{ii,1}==1
-        idxGood = [idxGood,dat{ii,3}];
-        channels = [channels,dat{ii,2}];
+        idxGood = [idxGood;dat{ii,3}];
+        channels = [channels;dat{ii,2}];
     end
 end
 if ~isempty(idxGood)

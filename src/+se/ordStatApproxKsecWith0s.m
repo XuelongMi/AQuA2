@@ -1,15 +1,15 @@
 function [mu, sigma] = ordStatApproxKsecWith0s(fg, bg, nanVec)
 % approximate the ~normal distribution using the fg and bg vector
 % assuming there is only K parts exist for [0 1]
-%
+
 if isempty(fg) && isempty(bg)
     mu = nan;
     sigma = nan;
     return;
 end
-fg = fg(:);
-bg = bg(:);
-nanVec = nanVec(:);
+fg = double(fg(:));
+bg = double(bg(:));
+nanVec = double(nanVec(:));
 M = length(fg);
 N = length(bg);
 nanLen = length(nanVec);
@@ -35,9 +35,9 @@ bi = cat(1, 0, bkpts*delta);
 ti = cat(1, bkpts*delta, 1);
 
 Finvbi = norminv(bi);
-Finvbi(1) = -1e5;
+Finvbi(1) = -40;
 Finvti = norminv(ti);
-Finvti(end) = 1e5;
+Finvti(end) = 40;
 
 mu = sum(ai.*(normpdf(Finvbi) - normpdf(Finvti)));
 t1=0;

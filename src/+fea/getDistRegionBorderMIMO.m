@@ -20,10 +20,10 @@ if ~isempty(lmkLst)
     resReg.landMark.border = lBorder;
     resReg.landMark.centerBorderAvgDist = lAvgDist*muPerPix;
     % distances to landmarks
-    resReg.landmarkDist = fea.evt2lmkProp(evts,lBorder,sz,0,0,muPerPix);
+    resReg.landmarkDist = fea.evt2lmkProp(evts,lBorder,sz,muPerPix);
     
     % frontier based propagation features related to landmark
-    rr = fea.evt2lmkProp1Wrap(datS,evts,lMask,muPerPix,minThr);
+    rr = fea.evt2lmkProp2Wrap(datS,evts,lmkLst,muPerPix,minThr);
     resReg.landmarkDir = rr;
 else
     resReg.landMark = [];
@@ -60,22 +60,15 @@ if ~isempty(regLst)
     % fprintf('Calculating distances to regions ...\n')
     for ii=1:length(evts)
         loc0 = evts{ii};
-        [ih,iw,~] = ind2sub(sz,loc0);
-        ihw = sub2ind([sz(1),sz(2)],ih,iw);
-        flag = 0;
+        [ih,iw,il,~] = ind2sub(sz,loc0);
+        ihw = sub2ind([sz(1:3)],ih,iw,il);
+        dd = [round(mean(ih)),round(mean(iw)),round(mean(il))];
         for jj=1:nReg
             msk0 = rMask{jj};
             if sum(msk0(ihw))>0
                 memberIdx(ii,jj) = 1;
-                distPix2Pix = msk0*0;
-                distPix2Pix(ihw) = 1;
-                if flag==0
-                    dd = regionprops(distPix2Pix,'Centroid');
-                    dd = dd.Centroid;
-                end
-                flag = 1;
                 cc = rBorder{jj};
-                dist2border(ii,jj) = min(sqrt((dd(1)-cc(:,1)).^2 + (dd(2)-cc(:,2)).^2));
+                dist2border(ii,jj) = min(sqrt((dd(1)-cc(:,1)).^2 + (dd(2)-cc(:,2)).^2 + (dd(3)-cc(:,3)).^2));
                 dist2borderNorm(ii,jj) = dist2border(ii,jj)/rAvgDist(jj);
             end
         end
@@ -88,7 +81,7 @@ if ~isempty(regLst)
     resReg.cell.incluLmk = incluLmk;
     resReg.cell.memberIdx = memberIdx;
     resReg.cell.dist2border = dist2border*muPerPix;
-    resReg.cell.dist2borderNorm = dist2borderNorm*muPerPix;
+    resReg.cell.dist2borderNorm = dist2borderNorm;
 else
     resReg.cell = [];
 end

@@ -1,16 +1,12 @@
-function ftsPg = getPropagationCentroidQuad(voli0,volr0,muPerPix,nEvt,ftsPg,northDi,opts)
+function ftsPg = getPropagationCentroidQuad(volr0,muPerPix,nEvt,ftsPg,northDi,opts)
 % getFeatures extract local features from events
 % specify direction of 'north', or anterior
 % not good at tracking complex propagation
 
-[H,W,T] = size(voli0);
-if T==1
-%     keyboard
-%     return
-end
+[H,W,L,T] = size(volr0);
 
 % make coordinate correct
-voli0 = voli0(end:-1:1,:,:);
+volr0 = permute(volr0,[1,2,4,3]);
 volr0 = volr0(end:-1:1,:,:);
 
 a = northDi(1);
@@ -30,13 +26,9 @@ if isfield(opts,'propthrmin') || ~isnan(opts.propthrmin)
     else
         thr0 = opts.propthrmin:opts.propthrstep:opts.propthrmax;
     end
-else
-    minShow1 = opts.minShow1;
-    thr0 = minShow1:0.1:0.8;  % significant propagation (increase of reconstructed signal)
 end
-% thr0 = 0.2:0.1:0.8;
+
 nThr = numel(thr0);
-volr0(voli0==0) = 0;  % exclude values outside event
 volr0(volr0<min(thr0)) = 0;
 sigMap = sum(volr0>=min(thr0),3);
 nPix = sum(sigMap(:)>0);
@@ -75,18 +67,13 @@ for ii=1:4
     msk(:,:,ii) = msk0;    
 end
 
-% msk(1:h0,:,1) = 1;
-% msk(h0:end,:,2) = 1;
-% msk(:,1:w0,3) = 1;
-% msk(:,w0:end,4) = 1;
-
 % locations of centroid
 sigDist = nan(T,4,nThr);  % weighted distance for each frame (four directions)
 pixNum = zeros(T,nThr);  % pixel number increase
 for tt=t0:t1
     imgCur = volr0(:,:,tt);
     for kk=1:nThr
-        imgCurThr = 1*(imgCur>=thr0(kk));
+        imgCurThr = imgCur>=thr0(kk);
         pixNum(tt,kk) = sum(imgCurThr(:));
         for ii=1:4            
             img0 = imgCurThr.*msk(:,:,ii);
@@ -105,66 +92,63 @@ end
 
 
 % max propagation speed.
-boundary = cell(tt,nThr);
-propMaxSpeed = zeros(T,nThr);
-for tt = max(t0-1,1):min(t1+1,T)
-    imgCur = volr0(:,:,tt);
-    for kk = 1:nThr
-        pixCur = imgCur>=thr0(kk);
-        pixCur = bwmorph(pixCur,'close');
-        boundary{tt,kk} = cell2mat(bwboundaries(pixCur));
-    end
-end
-
-for tt = max(2,t0):t1
-    imgCur = volr0(:,:,tt);
-    for kk = 1:nThr
-        pixCur = imgCur>=thr0(kk);
-        pixCur = bwmorph(pixCur,'close');
-        preBound = boundary{tt-1,kk};
-        curBound = boundary{tt,kk};
-        if(~isempty(preBound))
-            for ii = 1:size(curBound,1)
-               xy = curBound(ii,:);
-               shift = xy-preBound;
-               dist = sqrt(shift(:,1).^2 + shift(:,2).^2);
-               curSpeed = min(dist);
-               propMaxSpeed(tt,kk) = max(propMaxSpeed(tt,kk),curSpeed);
-            end
-        end
-        
-        if(~isempty(curBound))
-            for ii = 1:size(preBound,1)
-               xy = preBound(ii,:);
-               shift = xy-curBound;
-               dist = sqrt(shift(:,1).^2 + shift(:,2).^2);
-               curSpeed = min(dist);
-               propMaxSpeed(tt,kk) = max(propMaxSpeed(tt,kk),curSpeed);
-            end
-        end
-    end
-end
+% boundary = cell(tt,nThr);
+% propMaxSpeed = zeros(T,nThr);
+% for tt = max(t0-1,1):min(t1+1,T)
+%     imgCur = volr0(:,:,tt);
+%     for kk = 1:nThr
+%         pixCur = imgCur>=thr0(kk);
+%         pixCur = bwmorph(pixCur,'close');
+%         boundary{tt,kk} = cell2mat(bwboundaries(pixCur));
+%     end
+% end
+% 
+% for tt = max(2,t0):t1
+%     for kk = 1:nThr
+%         preBound = boundary{tt-1,kk};
+%         curBound = boundary{tt,kk};
+%         if(~isempty(preBound))
+%             for ii = 1:size(curBound,1)
+%                xy = curBound(ii,:);
+%                shift = xy-preBound;
+%                dist = sqrt(shift(:,1).^2 + shift(:,2).^2);
+%                curSpeed = min(dist);
+%                propMaxSpeed(tt,kk) = max(propMaxSpeed(tt,kk),curSpeed);
+%             end
+%         end
+%         
+%         if(~isempty(curBound))
+%             for ii = 1:size(preBound,1)
+%                xy = preBound(ii,:);
+%                shift = xy-curBound;
+%                dist = sqrt(shift(:,1).^2 + shift(:,2).^2);
+%                curSpeed = min(dist);
+%                propMaxSpeed(tt,kk) = max(propMaxSpeed(tt,kk),curSpeed);
+%             end
+%         end
+%     end
+% end
 
 prop = nan(size(sigDist));
 prop(2:end,:,:) = sigDist(2:end,:,:) - sigDist(1:end-1,:,:);
 
 propGrowMultiThr = prop; 
 propGrowMultiThr(propGrowMultiThr<0) = nan; 
-propGrow = nanmax(propGrowMultiThr,[],3);
+propGrow = max(propGrowMultiThr,[],3);
 propGrow(isnan(propGrow)) = 0;
-propGrowOverall = nansum(propGrow,1);
+propGrowOverall = sum(propGrow,1);
 
 propShrinkMultiThr = prop; 
 propShrinkMultiThr(propShrinkMultiThr>0) = nan; 
-propShrink = nanmax(propShrinkMultiThr,[],3);
+propShrink = max(propShrinkMultiThr,[],3);
 propShrink(isnan(propShrink)) = 0;
-propShrinkOverall = nansum(propShrink,1);
+propShrinkOverall = sum(propShrink,1);
 
 pixNumChange = zeros(size(pixNum));
 pixNumChange(2:end,:) = pixNum(2:end,:)-pixNum(1:end-1,:);
 pixNumChangeRateMultiThr = pixNumChange/nPix;
 pixNumChangeRateMultiThrAbs = abs(pixNumChangeRateMultiThr);
-[~,id] = nanmax(pixNumChangeRateMultiThrAbs,[],2);
+[~,id] = max(pixNumChangeRateMultiThrAbs,[],2);
 pixNumChangeRate = zeros(size(pixNumChangeRateMultiThr,1),1);
 for i = 1:size(pixNumChangeRateMultiThr,1)
     pixNumChangeRate(i) = pixNumChangeRateMultiThr(i,id(i));
@@ -179,12 +163,12 @@ ftsPg.areaChange{nEvt} = pixNumChange*muPerPix*muPerPix;
 ftsPg.areaChangeRate{nEvt} = pixNumChangeRate;
 
 ftsPg.areaFrame{nEvt} = pixNum*muPerPix*muPerPix;
-ftsPg.propMaxSpeed{nEvt} = propMaxSpeed*muPerPix;
-
-if singleThr
-    ftsPg.maxPropSpeed(nEvt) = max(ftsPg.propMaxSpeed{nEvt});
-    ftsPg.avgPropSpeed(nEvt) = mean(ftsPg.propMaxSpeed{nEvt});
-end
+% ftsPg.propMaxSpeed{nEvt} = propMaxSpeed*muPerPix;
+% 
+% if singleThr
+%     ftsPg.maxPropSpeed(nEvt) = max(ftsPg.propMaxSpeed{nEvt});
+%     ftsPg.avgPropSpeed(nEvt) = mean(ftsPg.propMaxSpeed{nEvt});
+% end
 
 end
 

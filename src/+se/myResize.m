@@ -209,7 +209,7 @@ left = floor(u - kernel_width/2)+1;
 % computation?  Note: it's OK to use an extra pixel here; if the
 % corresponding weights are all zero, it will be eliminated at the end
 % of this function.
-P = ceil(kernel_width);
+P = round(kernel_width);
 
 % The indices of the input pixels involved in computing the k-th output
 % pixel are in row k of the indices matrix.
@@ -278,7 +278,7 @@ if isInputIndexed(params)
     end
     
 elseif islogical(params.A)
-    B = B_in > 128;
+    B = B_in ==255;
     
 else
     B = B_in;

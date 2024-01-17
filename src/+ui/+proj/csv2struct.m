@@ -29,7 +29,7 @@ function Out = csv2struct(filename)
 % Written by Jarek Tuszynski, Leidos, jaroslaw.w.tuszynski_at_leidos.com
 % Code covered by BSD License
 %% read xls file with a single header row
-[~, ~, raw] = xlsread(filename);
+[raw] = readcell(filename);
 nRow = size(raw,1);
 nCol = size(raw,2);
 header = raw(1,:);   % Store header information

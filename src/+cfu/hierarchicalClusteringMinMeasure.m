@@ -23,6 +23,7 @@ function [groups] = hierarchicalClusteringMinMeasure(linkage,nNode,threshold)
            end
         end
     end
+    linkage = linkage(select,:);
     [~,id] = sort(linkage(:,3));
     linkage = linkage(id,:);
 

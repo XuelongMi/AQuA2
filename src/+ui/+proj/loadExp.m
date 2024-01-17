@@ -1,13 +1,19 @@
 function loadExp(~,~,f)
 % cfgFile = 'uicfg.mat';
 p0 = '.';
-% if exist(cfgFile,'file')
-%     xx = load(cfgFile);
-%     if isfield(xx,'cfg0') && isfield(xx.cfg0,'outPath')
-%         p0 = xx.cfg0.outPath;
-%     end
-% end
+try
+    load('./cfg/DefaultFolder.mat');
+    if exist(PathName,'dir')
+        p0 = PathName;
+    end
+catch
+    p0 = '.';
+end
+
 [FileName,PathName] = uigetfile({'*.mat'},'Choose saved results',p0);
+if exist('./cfg','dir')
+    save('./cfg/DefaultFolder.mat','PathName');
+end
 if ~isnumeric(FileName)
     setappdata(f,'fexp',[PathName,filesep,FileName]);
     ui.proj.prep([],[],f,1);

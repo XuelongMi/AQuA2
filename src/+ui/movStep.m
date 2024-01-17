@@ -1,9 +1,11 @@
-function datxCol = movStep(f,n,ovOnly,updtAll)
+function [datxCol,overLayData,overLayColor] = movStep(f,n,ovOnly,updtAll)
+% ----------- Modified by Xuelong Mi, 11/09/2022 -----------    
     % use btSt.sbs, btSt.leftView and btSt.rightView to determine what to show
     opts = getappdata(f,'opts');
     fh = guidata(f);
     scl = getappdata(f,'scl');
     btSt = getappdata(f,'btSt');
+    L = opts.sz(3);
     
     if ~exist('ovOnly','var') || isempty(ovOnly)
         ovOnly = 0;
@@ -18,55 +20,80 @@ function datxCol = movStep(f,n,ovOnly,updtAll)
     end
     
     %% channel 1
-    if ~isfield(btSt,'GaussFilter') ||(btSt.GaussFilter==0) 
-        dat1 = getappdata(f,'datOrg1');
-    else
-        dat1 = getappdata(f,'dat1');  
+    dat1 = getappdata(f,'datOrg1');
+    dat1 = dat1(:,:,:,n);
+    if isfield(btSt,'GaussFilter') && btSt.GaussFilter==1
+        dat1 = imgaussfilt(dat1,opts.smoXY);
     end
-    if isempty(dat1) dat1 = getappdata(f,'dat1'); end
-    dat1 = dat1(:,:,n);
-    
-    if (scl.map==1) dat1 = dat1.^2;  end
-    dat1 = (dat1-scl.min)/max(scl.max-scl.min,0.01)*scl.bri1;
-    
+%     dat1 = se.myResize(dat1,1);
+    dat1 = min(max(0,(dat1-scl.min)/max(scl.max-scl.min,0.01)),1);
+    dat2 = [];
     %% channel 2
     if(~opts.singleChannel)
-        if ~isfield(btSt,'GaussFilter') ||(btSt.GaussFilter==0) 
-            dat2 = getappdata(f,'datOrg2');
-        else
-            dat2 = getappdata(f,'dat2');   
+        dat2 = getappdata(f,'datOrg2');
+        dat2 = dat2(:,:,:,n);
+        if isfield(btSt,'GaussFilter') && btSt.GaussFilter==1
+            dat2 = imgaussfilt(dat2,opts.smoXY);
         end
-        if isempty(dat2) dat2 = getappdata(f,'dat2'); end
-        dat2 = dat2(:,:,n);
-        
-        if (scl.map==1) dat2 = dat2.^2;  end
-        dat2 = (dat2-scl.min)/max(scl.max-scl.min,0.01)*scl.bri2;
-        datx = cat(3,dat2,dat1,zeros(size(dat1)));
-    else
-        datx = cat(3,dat1,dat1,dat1);
+        dat2 = min(max(0,(dat2-scl.min)/max(scl.max-scl.min,0.01)),1);
     end
-
-    datxCol = ui.over.addOv(f,datx,n);
     
+    overCol1 = [];
+    overCol2 = [];
+    overLayData = [];
+    overLayColor = [];
+    
+    if L==1
+        [overCol1,overCol2] = ui.over.getOvCurFrame(f,dat1,n);
+    else
+        dsSclXY = fh.sldDsXY.Value;
+        dat1 = se.myResize(dat1,1/dsSclXY);
+        if ~opts.singleChannel
+            dat2 = se.myResize(dat2,1/dsSclXY);
+        end
+        [overLayData,overLayColor,overLayAlpha] = ui.over.getOvCurFrame3D(f,dat1,n,dsSclXY);
+    end
+    dat = cell(2,1); dat{1} = dat1; dat{2} = dat2;
+
     if ovOnly>0
-        return
+        if L==1
+            datxCol = cell(2,1);
+            datxCol{1} = cat(3,dat1,dat1,dat1) + overCol1;
+            datxCol{2} = cat(3,dat2,dat2,dat2) + overCol2;
+            return;
+        else
+            datxCol = dat;
+            return;
+        end
     end
     
     %% overlay
-    if btSt.sbs==0
-        fh.ims.im1.CData = flipud(datxCol);
-        ui.mov.addPatchLineText(f,fh.mov,n,updtAll);
-    end
-    if btSt.sbs==1
-        datxL = datx*scl.briL;
-        datxR = datx*scl.briR;
+    if ~fh.sbs.Value
+        if L == 1
+            fh.ims.im1.CData = flipud(cat(3,dat1,dat1,dat1)*scl.bri1 + overCol1);
+            ui.mov.addPatchLineText(f,fh.mov,n,updtAll);
+            fh.mov.XLim = scl.wrg;
+            fh.mov.YLim = scl.hrg;
+        else
+            fh.ims.im1.Data = dat1;
+            fh.ims.im1.OverlayData = overLayData{1};
+            fh.ims.im1.OverlayColormap = overLayColor{1};
+            fh.ims.im1.OverlayAlphamap = overLayAlpha{1};
+        end
+    else 
         viewName = {'leftView','rightView'};
         imName = {'im2a','im2b'};
+        ims = {fh.ims.im2a,fh.ims.im2b};
         axLst = {fh.movL,fh.movR};
-        for ii=1:2
+        thrAct = fh.sldActThr.Value;
+        briScl = [fh.sldBriL.Value,fh.sldBriR.Value];
+        channelSelect = [btSt.ChannelL,btSt.ChannelR];
+        overCol = cell(1,2); overCol{1} = overCol1; overCol{2} = overCol2;
+        for ii= 1:2
             curType = btSt.(viewName{ii});
             axNow = axLst{ii};
-            
+            curDat = dat{channelSelect(ii)};
+            curOverCol = overCol{channelSelect(ii)};
             % clean all patches
             if updtAll>0
                 types = {'quiver','line','patch','text'};
@@ -79,94 +106,140 @@ function datxCol = movStep(f,n,ovOnly,updtAll)
             end
             switch curType
                 case 'Raw'
-                    if ii==1
-                        fh.ims.(imName{ii}).CData = flipud(datxL);
+                    if L==1
+                        ims{ii}.CData = flipud(cat(3,curDat,curDat,curDat)*briScl(ii));
                     else
-                        fh.ims.(imName{ii}).CData = flipud(datxR);
+                        ims{ii}.Data = curDat;
+                        ims{ii}.OverlayData = [];
                     end
-%                     ui.mov.addPatchLineText(f,axNow,n,updtAll);
-                case 'dF'
-                        dF1 = getappdata(f,'dF1');
-                        if (~isempty(dF1)) dF1 = dF1(:,:,n);  else dF1 = dat1; end
-                        dF1 = dF1/opts.maxdF1;  % re-scale
-                        dF1 = (dF1-scl.min)/max(scl.max-scl.min,0.01)*scl.bri1;
-                        if(~opts.singleChannel)
-                            dF2 = getappdata(f,'dF2');
-                            if (~isempty(dF2)) dF2 = dF2(:,:,n); else dF2 = dat2; end
-                            dF2 = dF2/opts.maxdF2;
-                            dF2 = (dF2-scl.min)/max(scl.max-scl.min,0.01)*scl.bri2;
-                            dFx = cat(3,dF2,dF1,zeros(size(dF1)));
+                case 'dF / sigma'
+                        if channelSelect(ii)==1
+                            dF = getappdata(f,'dF1');
                         else
-                            dFx = cat(3,dF1,dF1,dF1);
+                            dF = getappdata(f,'dF2');
                         end
-                        if ii==1
-                            dFxL = dFx*scl.briL;
-                            fh.ims.(imName{ii}).CData = flipud(dFxL);
+                        nodF= false;
+                        if (~isempty(dF)) 
+                            dF = dF(:,:,:,n);  
+                        else 
+                            dF = curDat; 
+                            nodF = true;
+                        end
+                        if channelSelect(ii)==1
+                            dF = dF/opts.maxdF1;  % re-scale
                         else
-                            dFxR = dFx*scl.briR;
-                            fh.ims.(imName{ii}).CData = flipud(dFxR);
+                            dF = dF/opts.maxdF2;  % re-scale
                         end
+                        
+
+                        if L==1
+                            ims{ii}.CData = flipud(cat(3,dF,dF,dF)*briScl(ii));
+                        else
+                            if ~nodF
+                                ims{ii}.Data = se.myResize(dF,1/dsSclXY);
+                            else
+                                ims{ii}.Data = curDat;
+                            end
+                            ims{ii}.OverlayData = [];
+                        end
+                case 'Threshold preview'
+                    if channelSelect(ii)==1
+                        dF = getappdata(f,'dF1');
+                    else
+                        dF = getappdata(f,'dF2');
+                    end
+                    dF = dF(:,:,:,n);
+                    if L==1
+                        col = [0.64,0.48,0.16]; 
+                        thrData = zeros(opts.sz(1),opts.sz(2),3);
+                        bd = getappdata(f,'bd');
+                        evtSpatialMask = true(opts.sz(1:3));
+                        if bd.isKey('cell')
+                            bd0 = bd('cell');
+                            if numel(bd0) > 0
+                                evtSpatialMask = false(opts.sz(1:3));
+                                for iiii=1:numel(bd0)
+                                    p0 = bd0{iiii}{2};
+                                    evtSpatialMask(p0) = true;
+                                end
+                            end
+                        end
+                        mask000 = single(evtSpatialMask & dF>thrAct);
+                        for c = 1:3
+                            thrData(:,:,c) = col(c)*mask000;
+                        end
+                        thrData = thrData + cat(3,curDat,curDat,curDat);
+                        ims{ii}.CData = flipud(thrData*briScl(ii));
+                    else
+                        col = [0,0,0;0.64,0.48,0.16]; 
+                        ims{ii}.Data = curDat;
+                        thrData = zeros(opts.sz(1:3),'uint8');
+                        thrData(dF>thrAct) = 1;
+                        ims{ii}.OverlayData = round(se.myResize(thrData,1/dsSclXY));
+                        ims{ii}.OverlayColormap = col;
+                    end
+
                 case 'Raw + overlay'
-                    if ii==1
-                        datxColL = ui.over.addOv(f,datxL,n);
-                        fh.ims.(imName{ii}).CData = flipud(datxColL);
+                    if L==1
+                        ims{ii}.CData = flipud(cat(3,curDat,curDat,curDat)*briScl(ii) + curOverCol);
+                        ui.mov.addPatchLineText(f,axNow,n,updtAll);
                     else
-                        datxColR = ui.over.addOv(f,datxR,n);
-                        fh.ims.(imName{ii}).CData = flipud(datxColR);
+                        ims{ii}.Data = curDat;
+                        ims{ii}.OverlayData = overLayData{channelSelect(ii)};
+                        ims{ii}.OverlayColormap = overLayColor{channelSelect(ii)};
+                        ims{ii}.OverlayAlphamap = overLayAlpha{channelSelect(ii)};
                     end
-                    ui.mov.addPatchLineText(f,axNow,n,updtAll);
-                case 'Rising map'
-                    ui.mov.showRisingMap(f,imName{ii},n);
+                case 'Rising map (20%)'
+                    ui.mov.showRisingMap(f,imName{ii},n,curType,channelSelect(ii));
+                case 'Rising map (50%)'
+                    ui.mov.showRisingMap(f,imName{ii},n,curType,channelSelect(ii));
+                case 'Rising map (80%)'
+                    ui.mov.showRisingMap(f,imName{ii},n,curType,channelSelect(ii));
                 case 'Maximum Projection'
-                    if scl.map==1
-                        datM = fh.maxPro.^2;
-                    end
-                    if ii==1
-                        datML = (datM-scl.min)/max(scl.max-scl.min,0.01)*scl.briL;
-                        datMxL = cat(3,datML,datML,datML);
-                        fh.ims.(imName{ii}).CData = flipud(datMxL);
+                    if channelSelect(ii)==1
+                        datM = fh.maxPro1;
                     else
-                       datMR = (datM-scl.min)/max(scl.max-scl.min,0.01)*scl.briR;
-                        datMxR = cat(3,datMR,datMR,datMR);
-                        fh.ims.(imName{ii}).CData = flipud(datMxR);
+                        datM = fh.maxPro2;
                     end
-                    ui.mov.addPatchLineText(f,axNow,n,updtAll);
+                    datM = (datM-scl.min)/max(scl.max-scl.min,0.01);
+                    if L==1
+                        datM = cat(3,datM,datM,datM)*briScl(ii);
+                        ims{ii}.CData = flipud(datM);
+                        ui.mov.addPatchLineText(f,axNow,n,updtAll);
+                    else
+                        ims{ii}.Data = se.myResize(datM,1/dsSclXY);
+                        ims{ii}.OverlayData = [];
+                        ims{ii}.OverlayAlphamap = overLayAlpha;
+                    end
+                    
                 case 'Average Projection'
-                    if scl.map==1
-                        datM = fh.averPro.^2;
-                    end
-                    if ii==1
-                        datML = (datM-scl.min)/max(scl.max-scl.min,0.01)*scl.briL;
-                        datMxL = cat(3,datML,datML,datML);
-                        fh.ims.(imName{ii}).CData = flipud(datMxL);
+                    if channelSelect(ii)==1
+                        datM = fh.averPro1;
                     else
-                       datMR = (datM-scl.min)/max(scl.max-scl.min,0.01)*scl.briR;
-                        datMxR = cat(3,datMR,datMR,datMR);
-                        fh.ims.(imName{ii}).CData = flipud(datMxR);
+                        datM = fh.averPro2;
                     end
-                    ui.mov.addPatchLineText(f,axNow,n,updtAll);    
-                case 'Rising map'
-                    ui.mov.showRisingMap(f,imName{ii},n);
+                    datM = (datM-scl.min)/max(scl.max-scl.min,0.01);
+                    if L==1
+                        datM = cat(3,datM,datM,datM)*briScl(ii);
+                        ims{ii}.CData = flipud(datM);
+                        ui.mov.addPatchLineText(f,axNow,n,updtAll);    
+                    else
+                        ims{ii}.Data = se.myResize(datM,1/dsSclXY);
+                        ims{ii}.OverlayData = [];
+                        ims{ii}.OverlayAlphamap = overLayAlpha;
+                    end 
             end
         end
     end
-    
-    %% finish
-    % adjust area to show
-    if btSt.sbs==0
-        fh.mov.XLim = scl.wrg;
-        fh.mov.YLim = scl.hrg;
-    else
+
+    if L==1
         fh.movL.XLim = scl.wrg;
         fh.movL.YLim = scl.hrg;
         fh.movR.XLim = scl.wrg;
         fh.movR.YLim = scl.hrg;
     end
-    
     % frame number
-    ui.mov.updtMovInfo(f,n,opts.sz(3));
-    % f.Pointer = 'arrow';
-    
+    ui.mov.updtMovInfo(f,n,opts.sz(4));
 end
 
 

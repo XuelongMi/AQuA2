@@ -1,194 +1,80 @@
 function featurePlot(~,~,f)
-    g = figure('Name','Features','MenuBar','none','Toolbar','none',...
-        'NumberTitle','off','Visible','on','Position',[450,260,800,650]);
-    fts = getappdata(f, 'fts');
-    fh = guidata(f);
-    col = fh.pan.BackgroundColor;
-    ax = axes('Units','Pixels','Position',[50,150,700,450],'Tag','ax'); 
-    btSt = getappdata(f,'btSt');
-    xSel = btSt.filterMsk;
-    fArea = fts.basic.area;
-    fDFF = fts.curve.dffMax;
-    fDur = fts.curve.width55;
-    fPv = fts.curve.dffMaxPval;
-    fDc = fts.curve.decayTau;
+    g = uifigure('Name','Features','MenuBar','none','Toolbar','none',...
+        'NumberTitle','off','Visible','on','Position',[450,260,1000,650]);
     
-    
-    setappdata(g,'f0',fArea);
-    setappdata(g,'xSel',xSel);
-    setappdata(g,'fArea',fArea);
-    setappdata(g,'fDFF',fDFF);
-    setappdata(g,'fDur',fDur);
-    setappdata(g,'fPv',fPv);
-    setappdata(g,'fDc',fDc);
-    % component
-    Bbox = uicontrol('String','Box Plot','Position',[50,50,80,20],'Callback',{@boxButton,g});
-    Bhist = uicontrol('String','Histogram','Position',[200,50,80,20],'Callback',{@histButton,g});
-    Filtered = uicontrol('String','Filtered Data','Position',[650,50,80,20],'Callback',{@filtered,g});
-    Area = uicontrol('String','Area','Position',[50,20,80,20],'Callback',{@areaButton,g});
-    Amp = uicontrol('String','dF/F','Position',[200,20,80,20],'Callback',{@ampButton,g});
-    Duration = uicontrol('String','Duartion','Position',[350,20,80,20],'Callback',{@durButton,g});
-    PValue = uicontrol('String','P value','Position',[500,20,80,20],'Callback',{@pvButton,g});
-    DecayTau = uicontrol('String','DecayTau','Position',[650,20,80,20],'Callback',{@dcButton,g});
+    gSetting = uigridlayout(g,'Padding',[0,5,0,5],'ColumnWidth',{300,'1x'},'RowHeight',{'1x'},'ColumnSpacing',0,'RowSpacing',5);
+    gSetting1 = uigridlayout(gSetting,'Padding',[0,0,0,0],'ColumnWidth',{'1x'},'RowHeight',{20,20,20,20,20,20,75},'ColumnSpacing',0,'RowSpacing',5);
+
+    featureTable1 = getappdata(f,'featureTable1');
+    uilabel(gSetting1,'Text','Feature Selection','HorizontalAlignment','center');
+    uidropdown(gSetting1,'Items',featureTable1.Properties.RowNames,'Tag','featureSelection');
+    uilabel(gSetting1,'Text','Plot Selection','HorizontalAlignment','center');
+    uidropdown(gSetting1,'Items',{'BoxPlot','Histogram'},'Tag','type');
+    uilabel(gSetting1,'Text','Channel Selection','HorizontalAlignment','center');
+    uidropdown(gSetting1,'Items',{'Both Channels','Channel 1','Channel 2'},'Tag','channelSelection');
+    bDrawBt = uigridlayout(gSetting1,'Padding',[0,0,0,30],'ColumnWidth',{'1x','1x'},'RowHeight',{'1x','1x'},'RowSpacing',5,'ColumnSpacing',5);
+    uibutton(bDrawBt,'push','Text','Features of all events','ButtonPushedFcn',{@update,f,g,0});
+    uibutton(bDrawBt,'push','Text','Features of filtered events','ButtonPushedFcn',{@update,f,g,1});
+    uibutton(bDrawBt,'push','Text','Features of favorite events','ButtonPushedFcn',{@update,f,g,2});
+    axes('Parent',gSetting,'Tag','ax');
+
     gh = guihandles(g);
-    gh.ax = ax;
-    gh.area = Area;
-    gh.amp = Amp;
-    gh.duration = Duration;
-    gh.pv = PValue;
-    gh.decaytau = DecayTau;
-    gh.col = col;
-    gh.box = Bbox;
-    gh.hist = Bhist;
-    gh.filtered = Filtered;
-    gh.plotType = 0;
-    gh.fil = 0;
     guidata(g,gh);
-    
-    gh.box.BackgroundColor = [0.3 0.3 0.7];
-    gh.box.ForegroundColor = [1 1 1];
-    gh.area.BackgroundColor = [0.3 0.3 0.7];
-    gh.area.ForegroundColor = [1 1 1];
-    f0 = fArea;
-    boxplot(ax,f0);
 end
-function boxButton(~,~,g)
+function update(~,~,f,g,stg)
     gh = guidata(g);
-    ax = gh.ax;
-    gh.plotType = 0;
-    guidata(g,gh);
-    gh.hist.BackgroundColor = gh.col;
-    gh.hist.ForegroundColor = [0 0 0];
-    gh.box.BackgroundColor = [0.3 0.3 0.7];
-    gh.box.ForegroundColor = [1 1 1];
-    gPlot(ax,g);
-end
-function filtered(~,~,g)
-    gh = guidata(g);
-    ax = gh.ax;
-    if gh.fil==1
-        gh.fil = 0;
-        gh.filtered.BackgroundColor = gh.col;
-        gh.filtered.ForegroundColor = [0 0 0];
+    id = find(strcmp(gh.featureSelection.Value,gh.featureSelection.Items));
+    ch = find(strcmp(gh.channelSelection.Value,gh.channelSelection.Items));
+    btSt = getappdata(f,'btSt');
+    switch ch
+        case 1
+            featureTable1 = table2array(getappdata(f,'featureTable1'));
+            switch stg
+                case 0
+                    x = cell2mat(featureTable1(id,:));
+                case 1
+                    x = cell2mat(featureTable1(id,btSt.filterMsk1));
+                case 2               
+                    x = cell2mat(featureTable1(id,btSt.evtMngrMsk1));
+            end
+            try
+                featureTable2 = table2array(getappdata(f,'featureTable2'));
+                switch stg
+                    case 0
+                        x = [x,cell2mat(featureTable2(id,:))];
+                    case 1
+                        x = [x,cell2mat(featureTable2(id,btSt.filterMsk2))];
+                    case 2               
+                        x = [x,cell2mat(featureTable2(id,btSt.evtMngrMsk2))];
+                end
+            end
+        case 2
+            featureTable1 = table2array(getappdata(f,'featureTable1'));
+            switch stg
+                case 0
+                    x = cell2mat(featureTable1(id,:));
+                case 1
+                    x = cell2mat(featureTable1(id,btSt.filterMsk1));
+                case 2               
+                    x = cell2mat(featureTable1(id,btSt.evtMngrMsk1));
+            end
+        case 3
+            featureTable2 = table2array(getappdata(f,'featureTable2'));
+            switch stg
+                case 0
+                    x = [x,cell2mat(featureTable2(id,:))];
+                case 1
+                    x = [x,cell2mat(featureTable2(id,btSt.filterMsk2))];
+                case 2               
+                    x = [x,cell2mat(featureTable2(id,btSt.evtMngrMsk2))];
+            end
+    end
+    cla(gh.ax);
+    if strcmp(gh.type.Value,'BoxPlot')
+        boxplot(gh.ax,x);
     else
-        gh.fil = 1;
-        gh.filtered.BackgroundColor = [0.3 0.3 0.7];
-        gh.filtered.ForegroundColor = [1 1 1];
+        histogram(gh.ax,x);
+%         xlim(gh.ax,[min(x)-0.01,max(x)+0.01]);
     end
-    guidata(g,gh);
-    gPlot(ax,g);
-end
-function histButton(~,~,g)
-    gh = guidata(g);
-    ax = gh.ax;
-    gh.plotType = 1;
-    guidata(g,gh);
-    gh.box.BackgroundColor = gh.col;
-    gh.box.ForegroundColor = [0 0 0];
-    gh.hist.BackgroundColor = [0.3 0.3 0.7];
-    gh.hist.ForegroundColor = [1 1 1];
-    gPlot(ax,g);
-end
-function areaButton(~,~,g)
-    gh = guidata(g);
-    ax = gh.ax;
-    clearButton(g);
-    f0 = getappdata(g,'fArea');
-    setappdata(g,'f0',f0);
-    xl = 'Area (um^2)';
-    yl = 'Value';
-    setappdata(g,'xl',xl);
-    setappdata(g,'yl',yl);
-    gPlot(ax,g);
-    gh.area.BackgroundColor = [0.3 0.3 0.7];
-    gh.area.ForegroundColor = [1 1 1];
-end
-function ampButton(~,~,g)
-    gh = guidata(g);
-    ax = gh.ax;
-    clearButton(g);
-    f0 = getappdata(g,'fDFF');
-    setappdata(g,'f0',f0);
-    xl = 'dF/F';
-    yl = 'Value';
-    setappdata(g,'xl',xl);
-    setappdata(g,'yl',yl);
-    gPlot(ax,g);
-    gh.amp.BackgroundColor = [0.3 0.3 0.7];
-    gh.amp.ForegroundColor = [1 1 1];
-end
-function durButton(~,~,g)
-    gh = guidata(g);
-    ax = gh.ax;
-    clearButton(g);
-    f0 = getappdata(g,'fDur');
-    setappdata(g,'f0',f0);
-    xl = 'Duration (s)';
-    yl = 'Value';
-    setappdata(g,'xl',xl);
-    setappdata(g,'yl',yl);
-    gPlot(ax,g);
-    gh.duration.BackgroundColor = [0.3 0.3 0.7];
-    gh.duration.ForegroundColor = [1 1 1];
-end
-function pvButton(~,~,g)
-    gh = guidata(g);
-    ax = gh.ax;
-    clearButton(g);
-    f0 = getappdata(g,'fPv');
-    setappdata(g,'f0',f0);
-    xl = 'pValue';
-    yl = 'Value';
-    setappdata(g,'xl',xl);
-    setappdata(g,'yl',yl);
-    gPlot(ax,g);
-    gh.pv.BackgroundColor = [0.3 0.3 0.7];
-    gh.pv.ForegroundColor = [1 1 1];
-end
-function dcButton(~,~,g)
-    gh = guidata(g);
-    ax = gh.ax;
-    clearButton(g);
-    f0 = getappdata(g,'fDc');
-    setappdata(g,'f0',f0);
-    xl = 'DecayTau';
-    yl = 'Value';
-    setappdata(g,'xl',xl);
-    setappdata(g,'yl',yl);
-    gPlot(ax,g);
-    gh.decaytau.BackgroundColor = [0.3 0.3 0.7];
-    gh.decaytau.ForegroundColor = [1 1 1];
-end
-function clearButton(g)
-    gh = guidata(g);
-    
-    gh.area.BackgroundColor = gh.col;
-    gh.area.ForegroundColor = [0 0 0];
-    gh.amp.BackgroundColor = gh.col;
-    gh.amp.ForegroundColor = [0 0 0];
-    gh.duration.BackgroundColor = gh.col;
-    gh.duration.ForegroundColor = [0 0 0];
-    gh.pv.BackgroundColor = gh.col;
-    gh.pv.ForegroundColor = [0 0 0];
-    gh.decaytau.BackgroundColor = gh.col;
-    gh.decaytau.ForegroundColor = [0 0 0];
-end
-function gPlot(ax,g)
-    gh = guidata(g);
-    f0 = getappdata(g,'f0');
-    xl = getappdata(g,'xl');
-    yl = getappdata(g,'yl');
-    if gh.fil==1
-       xSel = getappdata(g,'xSel');
-       f0 = f0(xSel>0);
-    end
-    
-    
-    if gh.plotType==0
-        boxplot(ax,f0);
-    else
-        hist(ax,f0);
-    end
-    xlabel(xl);
-    ylabel(yl);
+    xlabel(gh.ax,'Selected feature');
 end

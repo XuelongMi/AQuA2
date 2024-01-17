@@ -1,25 +1,18 @@
 % single frame navigation
 % Each figure has only one zoom mode object?
-function movZoom(~,~,f)
+function movZoom(src,~,f)
 fh = guidata(f);
-btSt = getappdata(f,'btSt');
-col = getappdata(f,'col');
-if btSt.zoom==0
-    btSt.zoom = 1;
-    fh.zoom.BackgroundColor = [0.3 0.3 0.7];  % change icon color
-    fh.pan.BackgroundColor = col;  % change icon color
-    h = zoom;
-    h.ActionPostCallback = {@ui.mov.mypostcallback,f};
-    %setAllowAxesZoom(h,fh.curve,0);  % zoom movie only, do not zoom the dff curve
-    h.RightClickAction = 'InverseZoom';  % right click to zoom out
-    h.Enable = 'on';
-    h1 = pan;  % disable pan
-    h1.Enable = 'off';
+if src.Value
+    fh.Zoom.BackgroundColor = [0.8 0.8 0.8];
+    fh.Pan.Value = 0;
+    fh.Pan.BackgroundColor = [0.96 0.96 0.96];
+    pause(1e-4);
+    zoom(f,'on');
+    pan(f,'off');
 else
-    btSt.zoom = 0;
-    fh.zoom.BackgroundColor = col;
-    h = zoom;
-    h.Enable = 'off';
+    fh.Zoom.BackgroundColor = [0.96 0.96 0.96];
+    pause(1e-4);
+    zoom(f,'off');
 end
-setappdata(f,'btSt',btSt);
+
 end

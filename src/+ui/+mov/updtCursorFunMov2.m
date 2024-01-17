@@ -8,8 +8,6 @@ function updtCursorFunMov2(~,~,f,op)
     col = getappdata(f,'col');
     fh.AddBuilder.BackgroundColor = col;
     fh.RemoveBuilder.BackgroundColor = col;
-    fh.AddBuilder.ForegroundColor = [0 0 0];
-    fh.RemoveBuilder.ForegroundColor = [0 0 0];
 
     fh.imsMsk.ButtonDownFcn = [];
     
@@ -20,17 +18,13 @@ function updtCursorFunMov2(~,~,f,op)
     end
     
     if strcmp(op,'add')
-        fh.AddBuilder.BackgroundColor = [0.3 0.3 0.7];
-        fh.AddBuilder.ForegroundColor = [1 1 1];
+        fh.AddBuilder.BackgroundColor = [.8,.8,.8];
         ui.mov.drawReg2([],[],f,op,lbl);
         fh.AddBuilder.BackgroundColor = col;
         fh.RemoveBuilder.BackgroundColor = col;
-        fh.AddBuilder.ForegroundColor = [0 0 0];
-        fh.RemoveBuilder.ForegroundColor = [0 0 0];
         btSt.clickSt = [];
     elseif strcmp(op,'rm')
-        fh.RemoveBuilder.BackgroundColor = [0.3 0.3 0.7];
-        fh.RemoveBuilder.ForegroundColor = [1 1 1];
+        fh.RemoveBuilder.BackgroundColor = [.8,.8,.8];
         fh.imsMsk.ButtonDownFcn = {@ui.mov.movClick2,f,op,lbl};
         guidata(f,fh);
         btSt.clickSt = [op,lbl];

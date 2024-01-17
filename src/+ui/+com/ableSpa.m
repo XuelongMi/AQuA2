@@ -3,11 +3,8 @@ function ableSpa(~,~,f)
 %   Detailed explanation goes here
 fh = guidata(f);
 if(fh.needSpa.Value)
-    fh.spaString.Visible = 'on';
     fh.spaSetting.Visible = 'on';
-    
 else
-    fh.spaString.Visible = 'off';
     fh.spaSetting.Visible = 'off';
    
 end

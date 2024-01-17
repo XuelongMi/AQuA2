@@ -13,10 +13,9 @@ function dragReg(~,~,f,op,lbl)
     end
     
     ax = fh.mov;
-    if btSt.sbs==0
+    if ~fh.sbs.Value
         ax = fh.mov;
-    end
-    if btSt.sbs==1
+    else
         ax = fh.movL;
     end
     
@@ -25,9 +24,9 @@ function dragReg(~,~,f,op,lbl)
     W = opts.sz(2);
     
     if strcmp(op,'drag')
-        hh = imline(ax);
+        hh = drawline(ax);
         if ~isempty(hh)
-            points = hh.getPosition;
+            points = hh.Position;
             xshift = round(points(2,1)-points(1,1));
             yshift = round(points(2,2)-points(1,2));
             iw0 = max(min(round(points(1,1)),W),1);
@@ -50,8 +49,6 @@ function dragReg(~,~,f,op,lbl)
             end
             fh.DragLm.BackgroundColor = col;
             fh.DragCell.BackgroundColor = col;
-            fh.DragLm.ForegroundColor = [0 0 0];
-            fh.DragCell.ForegroundColor = [0 0 0];
             delete(hh)
         end
     end
